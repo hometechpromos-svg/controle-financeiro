@@ -21,69 +21,55 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- ====== TELA DE LOGIN / CADASTRO ====== -->
+    <!-- ====== TELA DE LOGIN / CADASTRO (ULTRA SIMPLES P/ CELULAR) ====== -->
     <div id="telaAuth" class="tela-auth">
-        <div class="auth-glow auth-glow-1"></div>
-        <div class="auth-glow auth-glow-2"></div>
+        <div class="tela-auth-inner">
+            <div class="auth-box">
+                <!-- LOGO ULTRA SIMPLES: EMOJI + ENVOLVIDO POR DIV SEM SVG -->
+                <div class="auth-logo-wrap">
+                    <span class="auth-logo-emoji" aria-hidden="true">💰</span>
+                </div>
 
-        <div class="auth-box">
-            <!-- NOVO LOGO FINANCEIRO -->
-            <div class="auth-logo-wrap">
-                <div class="auth-logo-svg" aria-hidden="true">
-                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#10b981"/>
-                            <stop offset="100%" stop-color="#34d399"/>
-                        </linearGradient>
-                    </defs>
-                    <rect x="24" y="36" width="72" height="48" rx="10" fill="#10b981" opacity="0.15"/>
-                    <rect x="28" y="40" width="64" height="40" rx="7" fill="none" stroke="url(#cardGrad)" stroke-width="4"/>
-                    <circle cx="75" cy="60" r="4" fill="url(#cardGrad)"/>
-                    <path d="M36 60 H55 M36 68 H62" stroke="url(#cardGrad)" stroke-width="3.5" stroke-linecap="round"/>
-                    <path d="M35 80 L45 70 L52 76 L64 63 L72 70 L85 56" stroke="#34d399" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                </svg>
+                <h1 class="auth-titulo">Controle Financeiro</h1>
+                <p class="auth-subtitulo">Sincronize seus gastos em todos os dispositivos</p>
+
+                <div class="auth-tabs" role="tablist">
+                    <button class="auth-tab ativa" id="tabLogin" role="tab" onclick="trocarAuthTab('login')">Entrar</button>
+                    <button class="auth-tab" id="tabCadastro" role="tab" onclick="trocarAuthTab('cadastro')">Criar Conta</button>
+                </div>
+
+                <!-- Formulário de LOGIN -->
+                <form id="formLogin" class="auth-form ativa">
+                    <div class="campo">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" placeholder="voce@email.com" autocomplete="email" required>
+                    </div>
+                    <div class="campo">
+                        <label>Senha</label>
+                        <input type="password" id="loginSenha" placeholder="Mínimo 6 caracteres" autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn-auth">Entrar</button>
+                    <p class="auth-msg" id="loginMsg"></p>
+                </form>
+
+                <!-- Formulário de CADASTRO -->
+                <form id="formCadastro" class="auth-form">
+                    <div class="campo">
+                        <label>Email</label>
+                        <input type="email" id="cadastroEmail" placeholder="voce@email.com" autocomplete="email" required>
+                    </div>
+                    <div class="campo">
+                        <label>Senha</label>
+                        <input type="password" id="cadastroSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required>
+                    </div>
+                    <div class="campo">
+                        <label>Confirmar Senha</label>
+                        <input type="password" id="cadastroSenha2" placeholder="Repita a senha" autocomplete="new-password" required>
+                    </div>
+                    <button type="submit" class="btn-auth">Criar Conta</button>
+                    <p class="auth-msg" id="cadastroMsg"></p>
+                </form>
             </div>
-
-            <h1 class="auth-titulo">Controle Financeiro</h1>
-            <p class="auth-subtitulo">Sincronize seus gastos em todos os dispositivos</p>
-
-            <div class="auth-tabs" role="tablist">
-                <button class="auth-tab ativa" id="tabLogin" role="tab" onclick="trocarAuthTab('login')">Entrar</button>
-                <button class="auth-tab" id="tabCadastro" role="tab" onclick="trocarAuthTab('cadastro')">Criar Conta</button>
-            </div>
-
-            <!-- Formulário de LOGIN -->
-            <form id="formLogin" class="auth-form ativa">
-                <div class="campo">
-                    <label>Email</label>
-                    <input type="email" id="loginEmail" placeholder="voce@email.com" autocomplete="email" required>
-                </div>
-                <div class="campo">
-                    <label>Senha</label>
-                    <input type="password" id="loginSenha" placeholder="Mínimo 6 caracteres" autocomplete="current-password" required>
-                </div>
-                <button type="submit" class="btn-auth">Entrar</button>
-                <p class="auth-msg" id="loginMsg"></p>
-            </form>
-
-            <!-- Formulário de CADASTRO -->
-            <form id="formCadastro" class="auth-form">
-                <div class="campo">
-                    <label>Email</label>
-                    <input type="email" id="cadastroEmail" placeholder="voce@email.com" autocomplete="email" required>
-                </div>
-                <div class="campo">
-                    <label>Senha</label>
-                    <input type="password" id="cadastroSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required>
-                </div>
-                <div class="campo">
-                    <label>Confirmar Senha</label>
-                    <input type="password" id="cadastroSenha2" placeholder="Repita a senha" autocomplete="new-password" required>
-                </div>
-                <button type="submit" class="btn-auth">Criar Conta</button>
-                <p class="auth-msg" id="cadastroMsg"></p>
-            </form>
         </div>
     </div>
 
