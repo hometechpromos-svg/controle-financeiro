@@ -16,248 +16,306 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>💰 Controle Financeiro</h1>
-        </header>
+    <!-- ====== TELA DE LOGIN / CADASTRO ====== -->
+    <div id="telaAuth" class="tela-auth">
+        <div class="auth-box">
+            <div class="auth-logo">💰</div>
+            <h1 class="auth-titulo">Controle Financeiro</h1>
+            <p class="auth-subtitulo">Sincronize seus dados em todos os dispositivos</p>
 
-        <nav class="abas">
-            <button class="aba ativa" data-aba="controle">📊 Controle</button>
-            <button class="aba" data-aba="previsoes">🔮 Previsões</button>
-            <button class="aba" data-aba="investimentos">📈 Investimentos</button>
-        </nav>
+            <div class="auth-tabs">
+                <button class="auth-tab ativa" id="tabLogin" onclick="trocarAuthTab('login')">Entrar</button>
+                <button class="auth-tab" id="tabCadastro" onclick="trocarAuthTab('cadastro')">Criar Conta</button>
+            </div>
 
-        <section id="aba-controle" class="conteudo-aba ativa">
-            <section class="resumo">
-                <div class="card saldo">
-                    <span class="label">Saldo Total</span>
-                    <span class="valor" id="saldoTotal">R$ 0,00</span>
+            <!-- Formulário de LOGIN -->
+            <form id="formLogin" class="auth-form ativa">
+                <div class="campo">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="voce@email.com" required>
                 </div>
-                <div class="card entrada">
-                    <span class="label">Entradas</span>
-                    <span class="valor" id="totalEntradas">R$ 0,00</span>
+                <div class="campo">
+                    <label>Senha</label>
+                    <input type="password" id="loginSenha" placeholder="Mínimo 6 caracteres" required>
                 </div>
-                <div class="card saida">
-                    <span class="label">Saídas</span>
-                    <span class="valor" id="totalSaidas">R$ 0,00</span>
+                <button type="submit" class="btn-auth">Entrar</button>
+                <p class="auth-msg" id="loginMsg"></p>
+            </form>
+
+            <!-- Formulário de CADASTRO -->
+            <form id="formCadastro" class="auth-form">
+                <div class="campo">
+                    <label>Email</label>
+                    <input type="email" id="cadastroEmail" placeholder="voce@email.com" required>
                 </div>
-            </section>
+                <div class="campo">
+                    <label>Senha</label>
+                    <input type="password" id="cadastroSenha" placeholder="Mínimo 6 caracteres" required>
+                </div>
+                <div class="campo">
+                    <label>Confirmar Senha</label>
+                    <input type="password" id="cadastroSenha2" placeholder="Repita a senha" required>
+                </div>
+                <button type="submit" class="btn-auth">Criar Conta</button>
+                <p class="auth-msg" id="cadastroMsg"></p>
+            </form>
+        </div>
+    </div>
 
-            <section class="formulario">
-                <h2>Nova Transação</h2>
-                <form id="formTransacao">
-                    <div class="campo">
-                        <label>Descrição</label>
-                        <input type="text" id="descricao" placeholder="Ex: Salário, Aluguel, Supermercado..." required>
-                    </div>
-
-                    <div class="campo">
-                        <label>Valor (R$)</label>
-                        <input type="number" id="valor" step="0.01" min="0.01" placeholder="0,00" required>
-                    </div>
-
-                    <div class="campo">
-                        <label>Tipo</label>
-                        <div class="opcoes tipo">
-                            <label class="opcao">
-                                <input type="radio" name="tipo" value="entrada" required>
-                                <span class="opcao-texto entrada-txt">📥 Entrada</span>
-                            </label>
-                            <label class="opcao">
-                                <input type="radio" name="tipo" value="saida" required>
-                                <span class="opcao-texto saida-txt">📤 Saída</span>
-                            </label>
+    <!-- ====== TELA PRINCIPAL (só aparece depois de logar) ====== -->
+    <div id="telaApp" class="tela-app" style="display: none;">
+        <div class="container">
+            <header>
+                <div class="header-content">
+                    <h1>💰 Controle Financeiro</h1>
+                    <div class="user-menu">
+                        <div class="user-info">
+                            <span class="user-avatar">👤</span>
+                            <span class="user-email" id="userEmail">—</span>
                         </div>
+                        <button class="btn-logout" onclick="fazerLogout()" title="Sair">🚪</button>
                     </div>
-
-                    <div class="campo">
-                        <label>Categoria</label>
-                        <div class="opcoes categoria">
-                            <label class="opcao">
-                                <input type="radio" name="categoria" value="fixo" required>
-                                <span class="opcao-texto fixo-txt">🔒 Fixo</span>
-                            </label>
-                            <label class="opcao">
-                                <input type="radio" name="categoria" value="variavel" required>
-                                <span class="opcao-texto variavel-txt">🔄 Variável</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="campo">
-                        <label>Data</label>
-                        <input type="date" id="data" required>
-                    </div>
-
-                    <button type="submit" class="btn-adicionar">Adicionar Transação</button>
-                </form>
-            </section>
-
-            <section class="transacoes">
-                <div class="transacoes-header">
-                    <h2>Transações</h2>
-                    <select id="filtro">
-                        <option value="todas">Todas</option>
-                        <option value="entradas">Apenas Entradas</option>
-                        <option value="saidas">Apenas Saídas</option>
-                        <option value="fixos">Apenas Fixos</option>
-                        <option value="variaveis">Apenas Variáveis</option>
-                    </select>
                 </div>
-                <ul id="listaTransacoes" class="lista-transacoes">
-                </ul>
-            </section>
-        </section>
+            </header>
 
-        <section id="aba-previsoes" class="conteudo-aba">
-            <section class="resumo">
-                <div class="card saldo">
-                    <span class="label">Saldo Previsto</span>
-                    <span class="valor" id="saldoPrevisto">R$ 0,00</span>
-                </div>
-                <div class="card entrada">
-                    <span class="label">Entradas Previstas</span>
-                    <span class="valor" id="totalEntradasPrevistas">R$ 0,00</span>
-                </div>
-                <div class="card saida">
-                    <span class="label">Saídas Previstas</span>
-                    <span class="valor" id="totalSaidasPrevistas">R$ 0,00</span>
-                </div>
-            </section>
+            <nav class="abas">
+                <button class="aba ativa" data-aba="controle">📊 Controle</button>
+                <button class="aba" data-aba="previsoes">🔮 Previsões</button>
+                <button class="aba" data-aba="investimentos">📈 Investimentos</button>
+            </nav>
 
-            <section class="formulario">
-                <h2>Nova Previsão</h2>
-                <form id="formPrevisao">
-                    <div class="campo">
-                        <label>Descrição</label>
-                        <input type="text" id="descricaoPrevisao" placeholder="Ex: Bônus, Viagem, Troca de carro..." required>
-                    </div>
-
-                    <div class="campo">
-                        <label>Valor (R$)</label>
-                        <input type="number" id="valorPrevisao" step="0.01" min="0.01" placeholder="0,00" required>
-                    </div>
-
-                    <div class="campo">
-                        <label>Tipo</label>
-                        <div class="opcoes tipo">
-                            <label class="opcao">
-                                <input type="radio" name="tipoPrevisao" value="entrada" required>
-                                <span class="opcao-texto entrada-txt">📥 Entrada</span>
-                            </label>
-                            <label class="opcao">
-                                <input type="radio" name="tipoPrevisao" value="saida" required>
-                                <span class="opcao-texto saida-txt">📤 Saída</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="campo">
-                        <label>Categoria</label>
-                        <div class="opcoes categoria">
-                            <label class="opcao">
-                                <input type="radio" name="categoriaPrevisao" value="fixo" required>
-                                <span class="opcao-texto fixo-txt">🔒 Fixo</span>
-                            </label>
-                            <label class="opcao">
-                                <input type="radio" name="categoriaPrevisao" value="variavel" required>
-                                <span class="opcao-texto variavel-txt">🔄 Variável</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="campo">
-                        <label>Data Prevista</label>
-                        <input type="date" id="dataPrevisao" required>
-                    </div>
-
-                    <button type="submit" class="btn-adicionar">Adicionar Previsão</button>
-                </form>
-            </section>
-
-            <section class="transacoes">
-                <div class="transacoes-header">
-                    <h2>Previsões</h2>
-                    <select id="filtroPrevisoes">
-                        <option value="todas">Todas</option>
-                        <option value="entradas">Apenas Entradas</option>
-                        <option value="saidas">Apenas Saídas</option>
-                        <option value="fixos">Apenas Fixos</option>
-                        <option value="variaveis">Apenas Variáveis</option>
-                    </select>
-                </div>
-                <ul id="listaPrevisoes" class="lista-transacoes">
-                </ul>
-            </section>
-        </section>
-
-        <section id="aba-investimentos" class="conteudo-aba">
-            <section class="formulario">
-                <h2>📈 Simulador de Investimento</h2>
-                <form id="formInvestimento" onsubmit="return false;">
-                    <div class="campo">
-                        <label>Valor Inicial (R$)</label>
-                        <input type="number" id="valorInicial" step="0.01" min="0" placeholder="Ex: 10000" value="1000">
-                    </div>
-
-                    <div class="campo">
-                        <label>Aportes Mensais (R$)</label>
-                        <input type="number" id="aporteMensal" step="0.01" min="0" placeholder="Ex: 500" value="100">
-                    </div>
-
-                    <div class="campo">
-                        <label>% do CDI</label>
-                        <input type="number" id="percentualCDI" step="1" min="0" max="1000" placeholder="Ex: 100" value="100">
-                    </div>
-
-                    <div class="campo">
-                        <label>CDI Anual (%)</label>
-                        <input type="number" id="cdiAnual" step="0.1" min="0" max="100" placeholder="Ex: 11,75" value="11,75">
-                    </div>
-
-                    <div class="campo">
-                        <label>Meses para Rendimento</label>
-                        <input type="number" id="mesesRendimento" step="1" min="1" max="600" placeholder="Ex: 12" value="12">
-                    </div>
-
-                    <button type="button" id="btnSimular" class="btn-adicionar">Simular Rendimento</button>
-                </form>
-            </section>
-
-            <section id="resultadoInvestimento" class="transacoes" style="display: none;">
-                <div class="resumo-investimento">
+            <section id="aba-controle" class="conteudo-aba ativa">
+                <section class="resumo">
                     <div class="card saldo">
-                        <span class="label">Valor Final</span>
-                        <span class="valor" id="valorFinal">R$ 0,00</span>
+                        <span class="label">Saldo Total</span>
+                        <span class="valor" id="saldoTotal">R$ 0,00</span>
                     </div>
                     <div class="card entrada">
-                        <span class="label">Total Investido</span>
-                        <span class="valor" id="totalInvestido">R$ 0,00</span>
+                        <span class="label">Entradas</span>
+                        <span class="valor" id="totalEntradas">R$ 0,00</span>
                     </div>
                     <div class="card saida">
-                        <span class="label">Rendimento</span>
-                        <span class="valor" id="totalRendimento">R$ 0,00</span>
+                        <span class="label">Saídas</span>
+                        <span class="valor" id="totalSaidas">R$ 0,00</span>
                     </div>
-                </div>
+                </section>
 
-                <h2 style="margin-top: 25px; margin-bottom: 15px; color: #333;">📅 Evolução Mês a Mês</h2>
-                <div class="tabela-meses-wrapper">
-                    <table class="tabela-meses" id="tabelaMeses">
-                        <thead>
-                            <tr>
-                                <th>Mês</th>
-                                <th>Valor Inicial</th>
-                                <th>Aporte</th>
-                                <th>Rendimento</th>
-                                <th>Valor Final</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
+                <section class="formulario">
+                    <h2>Nova Transação</h2>
+                    <form id="formTransacao">
+                        <div class="campo">
+                            <label>Descrição</label>
+                            <input type="text" id="descricao" placeholder="Ex: Salário, Aluguel, Supermercado..." required>
+                        </div>
+
+                        <div class="campo">
+                            <label>Valor (R$)</label>
+                            <input type="number" id="valor" step="0.01" min="0.01" placeholder="0,00" required>
+                        </div>
+
+                        <div class="campo">
+                            <label>Tipo</label>
+                            <div class="opcoes tipo">
+                                <label class="opcao">
+                                    <input type="radio" name="tipo" value="entrada" required>
+                                    <span class="opcao-texto entrada-txt">📥 Entrada</span>
+                                </label>
+                                <label class="opcao">
+                                    <input type="radio" name="tipo" value="saida" required>
+                                    <span class="opcao-texto saida-txt">📤 Saída</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="campo">
+                            <label>Categoria</label>
+                            <div class="opcoes categoria">
+                                <label class="opcao">
+                                    <input type="radio" name="categoria" value="fixo" required>
+                                    <span class="opcao-texto fixo-txt">🔒 Fixo</span>
+                                </label>
+                                <label class="opcao">
+                                    <input type="radio" name="categoria" value="variavel" required>
+                                    <span class="opcao-texto variavel-txt">🔄 Variável</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="campo">
+                            <label>Data</label>
+                            <input type="date" id="data" required>
+                        </div>
+
+                        <button type="submit" class="btn-adicionar">Adicionar Transação</button>
+                    </form>
+                </section>
+
+                <section class="transacoes">
+                    <div class="transacoes-header">
+                        <h2>Transações</h2>
+                        <select id="filtro">
+                            <option value="todas">Todas</option>
+                            <option value="entradas">Apenas Entradas</option>
+                            <option value="saidas">Apenas Saídas</option>
+                            <option value="fixos">Apenas Fixos</option>
+                            <option value="variaveis">Apenas Variáveis</option>
+                        </select>
+                    </div>
+                    <ul id="listaTransacoes" class="lista-transacoes">
+                    </ul>
+                </section>
             </section>
-        </section>
+
+            <section id="aba-previsoes" class="conteudo-aba">
+                <section class="resumo">
+                    <div class="card saldo">
+                        <span class="label">Saldo Previsto</span>
+                        <span class="valor" id="saldoPrevisto">R$ 0,00</span>
+                    </div>
+                    <div class="card entrada">
+                        <span class="label">Entradas Previstas</span>
+                        <span class="valor" id="totalEntradasPrevistas">R$ 0,00</span>
+                    </div>
+                    <div class="card saida">
+                        <span class="label">Saídas Previstas</span>
+                        <span class="valor" id="totalSaidasPrevistas">R$ 0,00</span>
+                    </div>
+                </section>
+
+                <section class="formulario">
+                    <h2>Nova Previsão</h2>
+                    <form id="formPrevisao">
+                        <div class="campo">
+                            <label>Descrição</label>
+                            <input type="text" id="descricaoPrevisao" placeholder="Ex: Bônus, Viagem, Troca de carro..." required>
+                        </div>
+
+                        <div class="campo">
+                            <label>Valor (R$)</label>
+                            <input type="number" id="valorPrevisao" step="0.01" min="0.01" placeholder="0,00" required>
+                        </div>
+
+                        <div class="campo">
+                            <label>Tipo</label>
+                            <div class="opcoes tipo">
+                                <label class="opcao">
+                                    <input type="radio" name="tipoPrevisao" value="entrada" required>
+                                    <span class="opcao-texto entrada-txt">📥 Entrada</span>
+                                </label>
+                                <label class="opcao">
+                                    <input type="radio" name="tipoPrevisao" value="saida" required>
+                                    <span class="opcao-texto saida-txt">📤 Saída</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="campo">
+                            <label>Categoria</label>
+                            <div class="opcoes categoria">
+                                <label class="opcao">
+                                    <input type="radio" name="categoriaPrevisao" value="fixo" required>
+                                    <span class="opcao-texto fixo-txt">🔒 Fixo</span>
+                                </label>
+                                <label class="opcao">
+                                    <input type="radio" name="categoriaPrevisao" value="variavel" required>
+                                    <span class="opcao-texto variavel-txt">🔄 Variável</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="campo">
+                            <label>Data Prevista</label>
+                            <input type="date" id="dataPrevisao" required>
+                        </div>
+
+                        <button type="submit" class="btn-adicionar">Adicionar Previsão</button>
+                    </form>
+                </section>
+
+                <section class="transacoes">
+                    <div class="transacoes-header">
+                        <h2>Previsões</h2>
+                        <select id="filtroPrevisoes">
+                            <option value="todas">Todas</option>
+                            <option value="entradas">Apenas Entradas</option>
+                            <option value="saidas">Apenas Saídas</option>
+                            <option value="fixos">Apenas Fixos</option>
+                            <option value="variaveis">Apenas Variáveis</option>
+                        </select>
+                    </div>
+                    <ul id="listaPrevisoes" class="lista-transacoes">
+                    </ul>
+                </section>
+            </section>
+
+            <section id="aba-investimentos" class="conteudo-aba">
+                <section class="formulario">
+                    <h2>📈 Simulador de Investimento</h2>
+                    <form id="formInvestimento" onsubmit="return false;">
+                        <div class="campo">
+                            <label>Valor Inicial (R$)</label>
+                            <input type="number" id="valorInicial" step="0.01" min="0" placeholder="Ex: 10000" value="1000">
+                        </div>
+
+                        <div class="campo">
+                            <label>Aportes Mensais (R$)</label>
+                            <input type="number" id="aporteMensal" step="0.01" min="0" placeholder="Ex: 500" value="100">
+                        </div>
+
+                        <div class="campo">
+                            <label>% do CDI</label>
+                            <input type="number" id="percentualCDI" step="1" min="0" max="1000" placeholder="Ex: 100" value="100">
+                        </div>
+
+                        <div class="campo">
+                            <label>CDI Anual (%)</label>
+                            <input type="number" id="cdiAnual" step="0.1" min="0" max="100" placeholder="Ex: 11,75" value="11.75">
+                        </div>
+
+                        <div class="campo">
+                            <label>Meses para Rendimento</label>
+                            <input type="number" id="mesesRendimento" step="1" min="1" max="600" placeholder="Ex: 12" value="12">
+                        </div>
+
+                        <button type="button" id="btnSimular" class="btn-adicionar">Simular Rendimento</button>
+                    </form>
+                </section>
+
+                <section id="resultadoInvestimento" class="transacoes" style="display: none;">
+                    <div class="resumo-investimento">
+                        <div class="card saldo">
+                            <span class="label">Valor Final</span>
+                            <span class="valor" id="valorFinal">R$ 0,00</span>
+                        </div>
+                        <div class="card entrada">
+                            <span class="label">Total Investido</span>
+                            <span class="valor" id="totalInvestido">R$ 0,00</span>
+                        </div>
+                        <div class="card saida">
+                            <span class="label">Rendimento</span>
+                            <span class="valor" id="totalRendimento">R$ 0,00</span>
+                        </div>
+                    </div>
+
+                    <h2 style="margin-top: 25px; margin-bottom: 15px; color: #333;">📅 Evolução Mês a Mês</h2>
+                    <div class="tabela-meses-wrapper">
+                        <table class="tabela-meses" id="tabelaMeses">
+                            <thead>
+                                <tr>
+                                    <th>Mês</th>
+                                    <th>Valor Inicial</th>
+                                    <th>Aporte</th>
+                                    <th>Rendimento</th>
+                                    <th>Valor Final</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+        </div>
     </div>
 
     <div id="modalEdicao" class="modal-fundo" style="display: none;">
@@ -318,6 +376,8 @@
         </div>
     </div>
 
+    <!-- CDN SUPABASE (mais estável) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
 </body>
 </html>

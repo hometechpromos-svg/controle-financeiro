@@ -1,306 +1,398 @@
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+// ==================== CONFIGURAÇÕES SUPABASE ====================
+const SUPABASE_URL = "https://wcoxenaodhqnugrbmflk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_aqgSyFe4DNHLDepj03BAvQ_f9GzjNDL";
+let supabase;
+try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true }
     });
+} catch(e) {
+    console.error("Erro ao iniciar Supabase:", e);
 }
 
-let transacoes = JSON.parse(localStorage.getItem('transacoes')) || [];
-let previsoes = JSON.parse(localStorage.getItem('previsoes')) || [];
+// ==================== DADOS EM MEMÓRIA ====================
+let transacoes = [];
+let previsoes = [];
+let usuarioAtual = null;
 
-const form = document.getElementById('formTransacao');
-const listaTransacoes = document.getElementById('listaTransacoes');
-const saldoTotalEl = document.getElementById('saldoTotal');
-const totalEntradasEl = document.getElementById('totalEntradas');
-const totalSaidasEl = document.getElementById('totalSaidas');
-const filtroEl = document.getElementById('filtro');
+// ==================== 1. AUTENTICAÇÃO ====================
+function trocarAuthTab(tipo) {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('ativa'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('ativa'));
+    document.getElementById('tab' + (tipo === 'login' ? 'Login' : 'Cadastro')).classList.add('ativa');
+    document.getElementById('form' + (tipo === 'login' ? 'Login' : 'Cadastro')).classList.add('ativa');
+    document.getElementById('loginMsg').textContent = '';
+    document.getElementById('cadastroMsg').textContent = '';
+}
 
-const formPrevisao = document.getElementById('formPrevisao');
-const listaPrevisoes = document.getElementById('listaPrevisoes');
-const saldoPrevistoEl = document.getElementById('saldoPrevisto');
-const totalEntradasPrevistasEl = document.getElementById('totalEntradasPrevistas');
-const totalSaidasPrevistasEl = document.getElementById('totalSaidasPrevistas');
-const filtroPrevisoesEl = document.getElementById('filtroPrevisoes');
+async function inicializarApp() {
+    // Service Worker (PWA)
+    if ('serviceWorker' in navigator) {
+        try { await navigator.serviceWorker.register('service-worker.js'); }
+        catch(e) { console.warn('SW não carregou:', e); }
+    }
 
-const formEdicao = document.getElementById('formEdicao');
-const modalEdicao = document.getElementById('modalEdicao');
-const modalTitulo = document.getElementById('modalTitulo');
+    // Verifica sessão
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+        usuarioAtual = session.user;
+        mostrarApp();
+        await carregarDados();
+    } else {
+        mostrarAuth();
+    }
 
-document.getElementById('data').valueAsDate = new Date();
-document.getElementById('dataPrevisao').valueAsDate = new Date();
-
-document.querySelectorAll('.aba').forEach(aba => {
-    aba.addEventListener('click', () => {
-        const alvo = aba.dataset.aba;
-        document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
-        document.querySelectorAll('.conteudo-aba').forEach(c => c.classList.remove('ativa'));
-        aba.classList.add('ativa');
-        document.getElementById('aba-' + alvo).classList.add('ativa');
+    // Listener para mudanças de login/logout
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+            usuarioAtual = session.user;
+            mostrarApp();
+            await carregarDados();
+        } else if (event === 'SIGNED_OUT') {
+            usuarioAtual = null;
+            transacoes = [];
+            previsoes = [];
+            mostrarAuth();
+        }
     });
+
+    inicializarUI();
+}
+
+function mostrarAuth() {
+    document.getElementById('telaAuth').style.display = 'flex';
+    document.getElementById('telaApp').style.display = 'none';
+}
+
+function mostrarApp() {
+    document.getElementById('telaAuth').style.display = 'none';
+    document.getElementById('telaApp').style.display = 'block';
+    document.getElementById('userEmail').textContent = usuarioAtual?.email || '';
+}
+
+document.getElementById('formLogin').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const senha = document.getElementById('loginSenha').value;
+    const msg = document.getElementById('loginMsg');
+    msg.textContent = 'Entrando...';
+    msg.style.color = '#667eea';
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    if (error) { msg.textContent = '❌ ' + error.message; msg.style.color = '#e74c3c'; }
+    else msg.textContent = '';
 });
 
-function formatarMoeda(valor) {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+document.getElementById('formCadastro').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('cadastroEmail').value.trim();
+    const senha = document.getElementById('cadastroSenha').value;
+    const senha2 = document.getElementById('cadastroSenha2').value;
+    const msg = document.getElementById('cadastroMsg');
+    msg.style.color = '#667eea';
+    if (senha !== senha2) { msg.textContent = '❌ Senhas diferentes!'; msg.style.color = '#e74c3c'; return; }
+    if (senha.length < 6) { msg.textContent = '❌ Senha deve ter pelo menos 6 caracteres'; msg.style.color = '#e74c3c'; return; }
+    msg.textContent = 'Criando conta...';
+    const { data, error } = await supabase.auth.signUp({ email, password: senha });
+    if (error) { msg.textContent = '❌ ' + error.message; msg.style.color = '#e74c3c'; }
+    else {
+        msg.textContent = '✅ Conta criada! Verifique seu email (ou já pode logar se a confirmação estiver desativada)';
+        msg.style.color = '#10b981';
+    }
+});
+
+async function fazerLogout() {
+    await supabase.auth.signOut();
 }
 
-function formatarData(dataStr) {
-    const partes = dataStr.split('-');
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+// ==================== 2. CARREGAR DADOS DA NUVEM ====================
+async function carregarDados() {
+    if (!usuarioAtual) return;
+
+    // Carrega transações
+    const { data: tData, error: tErr } = await supabase
+        .from('transacoes')
+        .select('*')
+        .order('data', { ascending: false });
+    if (!tErr) transacoes = tData || [];
+
+    // Carrega previsões
+    const { data: pData, error: pErr } = await supabase
+        .from('previsoes')
+        .select('*')
+        .order('data', { ascending: false });
+    if (!pErr) previsoes = pData || [];
+
+    atualizarUI();
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+// Gerar ID seguro
+function nextId(array) {
+    const max = array.reduce((m, x) => Math.max(m, x.id || 0), 0);
+    return max + 1;
 }
 
-function salvarTransacoes() {
-    localStorage.setItem('transacoes', JSON.stringify(transacoes));
+// ==================== 3. UI ====================
+function inicializarUI() {
+    document.getElementById('data').valueAsDate = new Date();
+    document.getElementById('dataPrevisao').valueAsDate = new Date();
+
+    // Abas
+    document.querySelectorAll('.aba').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.aba').forEach(b => b.classList.remove('ativa'));
+            document.querySelectorAll('.conteudo-aba').forEach(c => c.classList.remove('ativa'));
+            btn.classList.add('ativa');
+            document.getElementById('aba-' + btn.dataset.aba).classList.add('ativa');
+        });
+    });
+
+    // Filtros
+    document.getElementById('filtro').addEventListener('change', renderTransacoes);
+    document.getElementById('filtroPrevisoes').addEventListener('change', renderPrevisoes);
+
+    // Formulários
+    document.getElementById('formTransacao').addEventListener('submit', adicionarTransacao);
+    document.getElementById('formPrevisao').addEventListener('submit', adicionarPrevisao);
+    document.getElementById('formEdicao').addEventListener('submit', salvarEdicao);
+    document.getElementById('btnSimular').addEventListener('click', simularInvestimento);
 }
 
-function salvarPrevisoes() {
-    localStorage.setItem('previsoes', JSON.stringify(previsoes));
+function formatarMoeda(v) {
+    const num = Number(v) || 0;
+    return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function atualizarUI() {
+    atualizarResumo();
+    renderTransacoes();
+    renderPrevisoes();
 }
 
 function atualizarResumo() {
-    const entradas = transacoes.filter(t => t.tipo === 'entrada').reduce((sum, t) => sum + t.valor, 0);
-    const saidas = transacoes.filter(t => t.tipo === 'saida').reduce((sum, t) => sum + t.valor, 0);
-    const saldo = entradas - saidas;
+    const entradas = transacoes.filter(t => t.tipo === 'entrada').reduce((s, t) => s + Number(t.valor), 0);
+    const saidas = transacoes.filter(t => t.tipo === 'saida').reduce((s, t) => s + Number(t.valor), 0);
+    document.getElementById('totalEntradas').textContent = formatarMoeda(entradas);
+    document.getElementById('totalSaidas').textContent = formatarMoeda(saidas);
+    document.getElementById('saldoTotal').textContent = formatarMoeda(entradas - saidas);
 
-    saldoTotalEl.textContent = formatarMoeda(saldo);
-    totalEntradasEl.textContent = formatarMoeda(entradas);
-    totalSaidasEl.textContent = formatarMoeda(saidas);
+    const eP = previsoes.filter(t => t.tipo === 'entrada').reduce((s, t) => s + Number(t.valor), 0);
+    const sP = previsoes.filter(t => t.tipo === 'saida').reduce((s, t) => s + Number(t.valor), 0);
+    document.getElementById('totalEntradasPrevistas').textContent = formatarMoeda(eP);
+    document.getElementById('totalSaidasPrevistas').textContent = formatarMoeda(sP);
+    document.getElementById('saldoPrevisto').textContent = formatarMoeda(eP - sP);
 }
 
-function atualizarResumoPrevisoes() {
-    const entradas = previsoes.filter(t => t.tipo === 'entrada').reduce((sum, t) => sum + t.valor, 0);
-    const saidas = previsoes.filter(t => t.tipo === 'saida').reduce((sum, t) => sum + t.valor, 0);
-    const saldo = entradas - saidas;
+// ==================== 4. TRANSAÇÕES ====================
+async function adicionarTransacao(e) {
+    e.preventDefault();
+    if (!usuarioAtual) return alert('Faça login primeiro!');
 
-    saldoPrevistoEl.textContent = formatarMoeda(saldo);
-    totalEntradasPrevistasEl.textContent = formatarMoeda(entradas);
-    totalSaidasPrevistasEl.textContent = formatarMoeda(saidas);
-}
+    const nova = {
+        id: nextId(transacoes),
+        user_id: usuarioAtual.id,
+        descricao: document.getElementById('descricao').value.trim(),
+        valor: Number(document.getElementById('valor').value),
+        tipo: document.querySelector('input[name="tipo"]:checked').value,
+        categoria: document.querySelector('input[name="categoria"]:checked').value,
+        data: document.getElementById('data').value
+    };
 
-function montarItem(item, origem) {
-    return `
-        <li class="transacao-item">
-            <div class="transacao-info">
-                <div class="transacao-descricao">${escapeHtml(item.descricao)}</div>
-                <div class="transacao-detalhes">
-                    <span class="tag tag-tipo ${item.tipo}">${item.tipo === 'entrada' ? '📥 Entrada' : '📤 Saída'}</span>
-                    <span class="tag tag-categoria ${item.categoria}">${item.categoria === 'fixo' ? '🔒 Fixo' : '🔄 Variável'}</span>
-                    <span class="tag tag-data">📅 ${formatarData(item.data)}</span>
-                </div>
-            </div>
-            <div class="transacao-botoes">
-                <span class="transacao-valor ${item.tipo}">${item.tipo === 'entrada' ? '+' : '-'} ${formatarMoeda(item.valor)}</span>
-                <button class="btn-editar" onclick="editarItem(${item.id}, '${origem}')" title="Editar">✏️</button>
-                <button class="btn-excluir" onclick="excluirItem(${item.id}, '${origem}')" title="Excluir">🗑️</button>
-            </div>
-        </li>
-    `;
-}
-
-function renderizarTransacoes() {
-    const filtro = filtroEl.value;
-    let dados = transacoes;
-    dados = aplicarFiltro(dados, filtro);
-    dados.sort((a, b) => new Date(b.data) - new Date(a.data));
-
-    if (dados.length === 0) {
-        listaTransacoes.innerHTML = '<li class="vazio">Nenhuma transação encontrada. Adicione sua primeira transação acima!</li>';
+    const { error } = await supabase.from('transacoes').insert([nova]);
+    if (error) {
+        alert('Erro: ' + error.message);
         return;
     }
-
-    listaTransacoes.innerHTML = dados.map(t => montarItem(t, 'transacoes')).join('');
+    transacoes.unshift(nova);
+    e.target.reset();
+    document.getElementById('data').valueAsDate = new Date();
+    atualizarResumo();
+    renderTransacoes();
 }
 
-function renderizarPrevisoes() {
-    const filtro = filtroPrevisoesEl.value;
-    let dados = previsoes;
-    dados = aplicarFiltro(dados, filtro);
-    dados.sort((a, b) => new Date(a.data) - new Date(b.data));
+function renderTransacoes() {
+    const filtro = document.getElementById('filtro').value;
+    let lista = transacoes.slice();
 
-    if (dados.length === 0) {
-        listaPrevisoes.innerHTML = '<li class="vazio">Nenhuma previsão cadastrada. Comece a planejar seu futuro!</li>';
-        return;
-    }
+    if (filtro === 'entradas') lista = lista.filter(t => t.tipo === 'entrada');
+    else if (filtro === 'saidas') lista = lista.filter(t => t.tipo === 'saida');
+    else if (filtro === 'fixos') lista = lista.filter(t => t.categoria === 'fixo');
+    else if (filtro === 'variaveis') lista = lista.filter(t => t.categoria === 'variavel');
 
-    listaPrevisoes.innerHTML = dados.map(t => montarItem(t, 'previsoes')).join('');
+    const ul = document.getElementById('listaTransacoes');
+    ul.innerHTML = lista.length === 0
+        ? '<li class="vazio">Nenhuma transação cadastrada</li>'
+        : lista.map(itemHtml).join('');
 }
 
-function aplicarFiltro(dados, filtro) {
-    if (filtro === 'entradas') return dados.filter(t => t.tipo === 'entrada');
-    if (filtro === 'saidas') return dados.filter(t => t.tipo === 'saida');
-    if (filtro === 'fixos') return dados.filter(t => t.categoria === 'fixo');
-    if (filtro === 'variaveis') return dados.filter(t => t.categoria === 'variavel');
-    return dados;
+function itemHtml(t) {
+    const dataBrasil = new Date(t.data + 'T00:00:00').toLocaleDateString('pt-BR');
+    return `<li class="item-transacao">
+        <div class="item-col1">
+            <span class="item-descricao">${escape(t.descricao)}</span>
+            <div class="item-tags">
+                <span class="tag tipo-${t.tipo}">${t.tipo === 'entrada' ? '📥 Entrada' : '📤 Saída'}</span>
+                <span class="tag cat-${t.categoria}">${t.categoria === 'fixo' ? '🔒 Fixo' : '🔄 Variável'}</span>
+                <span class="tag data">📅 ${dataBrasil}</span>
+            </div>
+        </div>
+        <div class="item-col2">
+            <span class="item-valor ${t.tipo}">${t.tipo === 'entrada' ? '+' : '-'} ${formatarMoeda(t.valor)}</span>
+            <div class="item-acoes">
+                <button class="btn-edit" onclick="abrirEdicao(${t.id}, 'transacao')">✏️</button>
+                <button class="btn-del" onclick="excluirItem(${t.id}, 'transacao')">🗑️</button>
+            </div>
+        </div>
+    </li>`;
 }
 
-function abrirModal(titulo) {
-    modalTitulo.textContent = titulo;
-    modalEdicao.style.display = 'flex';
+async function excluirItem(id, origem) {
+    if (!confirm('Tem certeza que deseja excluir?')) return;
+    const tabela = origem === 'transacao' ? 'transacoes' : 'previsoes';
+    const { error } = await supabase.from(tabela).delete().eq('id', id);
+    if (error) return alert('Erro: ' + error.message);
+
+    if (origem === 'transacao') transacoes = transacoes.filter(t => t.id !== id);
+    else previsoes = previsoes.filter(t => t.id !== id);
+    atualizarResumo();
+    renderTransacoes();
+    renderPrevisoes();
 }
 
-function fecharModal() {
-    modalEdicao.style.display = 'none';
-    formEdicao.reset();
+// ==================== 5. PREVISÕES ====================
+async function adicionarPrevisao(e) {
+    e.preventDefault();
+    if (!usuarioAtual) return alert('Faça login primeiro!');
+
+    const nova = {
+        id: nextId(previsoes),
+        user_id: usuarioAtual.id,
+        descricao: document.getElementById('descricaoPrevisao').value.trim(),
+        valor: Number(document.getElementById('valorPrevisao').value),
+        tipo: document.querySelector('input[name="tipoPrevisao"]:checked').value,
+        categoria: document.querySelector('input[name="categoriaPrevisao"]:checked').value,
+        data: document.getElementById('dataPrevisao').value
+    };
+
+    const { error } = await supabase.from('previsoes').insert([nova]);
+    if (error) { alert('Erro: ' + error.message); return; }
+    previsoes.unshift(nova);
+    e.target.reset();
+    document.getElementById('dataPrevisao').valueAsDate = new Date();
+    atualizarResumo();
+    renderPrevisoes();
 }
 
-function editarItem(id, origem) {
-    const lista = origem === 'transacoes' ? transacoes : previsoes;
-    const item = lista.find(t => t.id === id);
+function renderPrevisoes() {
+    const filtro = document.getElementById('filtroPrevisoes').value;
+    let lista = previsoes.slice();
+
+    if (filtro === 'entradas') lista = lista.filter(t => t.tipo === 'entrada');
+    else if (filtro === 'saidas') lista = lista.filter(t => t.tipo === 'saida');
+    else if (filtro === 'fixos') lista = lista.filter(t => t.categoria === 'fixo');
+    else if (filtro === 'variaveis') lista = lista.filter(t => t.categoria === 'variavel');
+
+    const ul = document.getElementById('listaPrevisoes');
+    ul.innerHTML = lista.length === 0
+        ? '<li class="vazio">Nenhuma previsão cadastrada</li>'
+        : lista.map(itemHtml).join('');
+}
+
+// ==================== 6. EDIÇÃO ====================
+function abrirEdicao(id, origem) {
+    const arr = origem === 'transacao' ? transacoes : previsoes;
+    const item = arr.find(x => x.id === id);
     if (!item) return;
 
-    document.getElementById('editId').value = item.id;
+    document.getElementById('modalTitulo').textContent = origem === 'transacao' ? 'Editar Transação' : 'Editar Previsão';
+    document.getElementById('editId').value = id;
     document.getElementById('editOrigem').value = origem;
     document.getElementById('editDescricao').value = item.descricao;
     document.getElementById('editValor').value = item.valor;
     document.getElementById('editData').value = item.data;
+    document.getElementById('editTipo' + (item.tipo === 'entrada' ? 'Entrada' : 'Saida')).checked = true;
+    document.getElementById('editCategoria' + (item.categoria === 'fixo' ? 'Fixo' : 'Variavel')).checked = true;
 
-    if (item.tipo === 'entrada') document.getElementById('editTipoEntrada').checked = true;
-    else document.getElementById('editTipoSaida').checked = true;
-
-    if (item.categoria === 'fixo') document.getElementById('editCategoriaFixo').checked = true;
-    else document.getElementById('editCategoriaVariavel').checked = true;
-
-    abrirModal(origem === 'transacoes' ? 'Editar Transação' : 'Editar Previsão');
+    document.getElementById('modalEdicao').style.display = 'flex';
 }
 
-function excluirItem(id, origem) {
-    if (!confirm('Deseja realmente excluir este item?')) return;
-    if (origem === 'transacoes') {
-        transacoes = transacoes.filter(t => t.id !== id);
-        salvarTransacoes();
-        atualizarResumo();
-        renderizarTransacoes();
-    } else {
-        previsoes = previsoes.filter(t => t.id !== id);
-        salvarPrevisoes();
-        atualizarResumoPrevisoes();
-        renderizarPrevisoes();
-    }
+function fecharModal() {
+    document.getElementById('modalEdicao').style.display = 'none';
 }
 
-form.addEventListener('submit', function(e) {
+async function salvarEdicao(e) {
     e.preventDefault();
-    const descricao = document.getElementById('descricao').value.trim();
-    const valor = parseFloat(document.getElementById('valor').value);
-    const tipo = document.querySelector('input[name="tipo"]:checked').value;
-    const categoria = document.querySelector('input[name="categoria"]:checked').value;
-    const data = document.getElementById('data').value;
-
-    transacoes.push({ id: Date.now(), descricao, valor, tipo, categoria, data });
-    salvarTransacoes();
-    atualizarResumo();
-    renderizarTransacoes();
-
-    form.reset();
-    document.getElementById('data').valueAsDate = new Date();
-});
-
-formPrevisao.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const descricao = document.getElementById('descricaoPrevisao').value.trim();
-    const valor = parseFloat(document.getElementById('valorPrevisao').value);
-    const tipo = document.querySelector('input[name="tipoPrevisao"]:checked').value;
-    const categoria = document.querySelector('input[name="categoriaPrevisao"]:checked').value;
-    const data = document.getElementById('dataPrevisao').value;
-
-    previsoes.push({ id: Date.now(), descricao, valor, tipo, categoria, data });
-    salvarPrevisoes();
-    atualizarResumoPrevisoes();
-    renderizarPrevisoes();
-
-    formPrevisao.reset();
-    document.getElementById('dataPrevisao').valueAsDate = new Date();
-});
-
-formEdicao.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const id = parseInt(document.getElementById('editId').value);
+    const id = Number(document.getElementById('editId').value);
     const origem = document.getElementById('editOrigem').value;
-    const descricao = document.getElementById('editDescricao').value.trim();
-    const valor = parseFloat(document.getElementById('editValor').value);
-    const tipo = document.querySelector('input[name="editTipo"]:checked').value;
-    const categoria = document.querySelector('input[name="editCategoria"]:checked').value;
-    const data = document.getElementById('editData').value;
+    const tabela = origem === 'transacao' ? 'transacoes' : 'previsoes';
 
-    const novosDados = { descricao, valor, tipo, categoria, data };
+    const dados = {
+        descricao: document.getElementById('editDescricao').value.trim(),
+        valor: Number(document.getElementById('editValor').value),
+        tipo: document.querySelector('input[name="editTipo"]:checked').value,
+        categoria: document.querySelector('input[name="editCategoria"]:checked').value,
+        data: document.getElementById('editData').value
+    };
 
-    if (origem === 'transacoes') {
-        const idx = transacoes.findIndex(t => t.id === id);
-        if (idx !== -1) transacoes[idx] = { ...transacoes[idx], ...novosDados };
-        salvarTransacoes();
-        atualizarResumo();
-        renderizarTransacoes();
-    } else {
-        const idx = previsoes.findIndex(t => t.id === id);
-        if (idx !== -1) previsoes[idx] = { ...previsoes[idx], ...novosDados };
-        salvarPrevisoes();
-        atualizarResumoPrevisoes();
-        renderizarPrevisoes();
-    }
+    const { error } = await supabase.from(tabela).update(dados).eq('id', id);
+    if (error) { alert('Erro: ' + error.message); return; }
+
+    let arr = origem === 'transacao' ? transacoes : previsoes;
+    const idx = arr.findIndex(x => x.id === id);
+    if (idx >= 0) arr[idx] = { ...arr[idx], ...dados };
 
     fecharModal();
+    atualizarResumo();
+    renderTransacoes();
+    renderPrevisoes();
+}
+
+document.querySelector('.modal-fundo').addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-fundo')) fecharModal();
 });
 
-filtroEl.addEventListener('change', renderizarTransacoes);
-filtroPrevisoesEl.addEventListener('change', renderizarPrevisoes);
-
-window.editarItem = editarItem;
-window.excluirItem = excluirItem;
-window.fecharModal = fecharModal;
-
-modalEdicao.addEventListener('click', function(e) {
-    if (e.target === modalEdicao) fecharModal();
-});
-
-document.getElementById('btnSimular').addEventListener('click', simularInvestimento);
-
+// ==================== 7. INVESTIMENTOS ====================
 function simularInvestimento() {
-    const valorInicial = parseFloat(document.getElementById('valorInicial').value) || 0;
-    const aporteMensal = parseFloat(document.getElementById('aporteMensal').value) || 0;
-    const percentualCDI = parseFloat(document.getElementById('percentualCDI').value) || 0;
-    const cdiAnual = parseFloat(document.getElementById('cdiAnual').value.toString().replace(',', '.')) || 0;
-    const meses = parseInt(document.getElementById('mesesRendimento').value) || 1;
+    const inicial = Number(document.getElementById('valorInicial').value) || 0;
+    const aporte = Number(document.getElementById('aporteMensal').value) || 0;
+    const percCdi = Number(document.getElementById('percentualCDI').value) || 100;
+    const cdiAnual = Number(document.getElementById('cdiAnual').value) || 11.75;
+    const meses = Number(document.getElementById('mesesRendimento').value) || 1;
 
-    const taxaAnualDecimal = (cdiAnual / 100) * (percentualCDI / 100);
-    const taxaMensal = Math.pow(1 + taxaAnualDecimal, 1 / 12) - 1;
+    const taxaCdiMensal = Math.pow(1 + (cdiAnual / 100), 1 / 12) - 1;
+    const taxaReal = taxaCdiMensal * (percCdi / 100);
 
     const tbody = document.querySelector('#tabelaMeses tbody');
     tbody.innerHTML = '';
+    let saldo = inicial;
+    let totalInvestido = inicial;
 
-    let valorAtual = valorInicial;
-    let totalInvestido = valorInicial;
+    for (let m = 1; m <= meses; m++) {
+        const inicialMes = saldo;
+        const rendimento = saldo * taxaReal;
+        saldo += rendimento + aporte;
+        totalInvestido += aporte;
 
-    for (let mes = 1; mes <= meses; mes++) {
-        const valorInicialMes = valorAtual;
-        const rendimentoMes = valorAtual * taxaMensal;
-        valorAtual += rendimentoMes + aporteMensal;
-        totalInvestido += aporteMensal;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>Mês ${mes}</td>
-            <td>${formatarMoeda(valorInicialMes)}</td>
-            <td>${formatarMoeda(aporteMensal)}</td>
-            <td class="verde">+ ${formatarMoeda(rendimentoMes)}</td>
-            <td class="verde"><strong>${formatarMoeda(valorAtual)}</strong></td>
-        `;
-        tbody.appendChild(tr);
+        tbody.innerHTML += `<tr>
+            <td>${m}º</td>
+            <td>${formatarMoeda(inicialMes)}</td>
+            <td>${formatarMoeda(aporte)}</td>
+            <td class="positivo">+ ${formatarMoeda(rendimento)}</td>
+            <td><strong>${formatarMoeda(saldo)}</strong></td>
+        </tr>`;
     }
 
-    const totalRendimento = valorAtual - totalInvestido;
-
-    document.getElementById('valorFinal').textContent = formatarMoeda(valorAtual);
+    document.getElementById('valorFinal').textContent = formatarMoeda(saldo);
     document.getElementById('totalInvestido').textContent = formatarMoeda(totalInvestido);
-    document.getElementById('totalRendimento').textContent = formatarMoeda(totalRendimento);
+    document.getElementById('totalRendimento').textContent = formatarMoeda(saldo - totalInvestido);
     document.getElementById('resultadoInvestimento').style.display = 'block';
-    document.getElementById('resultadoInvestimento').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-atualizarResumo();
-renderizarTransacoes();
-atualizarResumoPrevisoes();
-renderizarPrevisoes();
+// ==================== UTILS ====================
+function escape(s) {
+    return String(s).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+}
+
+// Start
+inicializarApp();

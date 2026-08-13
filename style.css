@@ -34,10 +34,20 @@ body {
     margin: 0 auto;
 }
 
+/* =========================
+   HEADER COM USUÁRIO
+   ========================= */
 header {
     text-align: center;
     color: #ffffff;
     margin-bottom: 14px;
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 header h1 {
@@ -46,6 +56,199 @@ header h1 {
     letter-spacing: -0.3px;
 }
 
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 6px 10px 6px 12px;
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 220px;
+}
+
+.user-avatar { font-size: 18px; }
+
+.user-email {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.btn-logout {
+    background: rgba(255,255,255,0.25);
+    border: none;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+.btn-logout:active { background: rgba(255,255,255,0.45); }
+
+/* =========================
+   TELA DE AUTENTICAÇÃO
+   ========================= */
+.tela-auth {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    padding-top: calc(20px + env(safe-area-inset-top));
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    z-index: 2000;
+}
+
+.auth-box {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 28px 22px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.auth-logo {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 14px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+}
+
+.auth-titulo {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: #111827;
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+}
+
+.auth-subtitulo {
+    text-align: center;
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 22px;
+    font-weight: 500;
+}
+
+.auth-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    background: #f3f4f6;
+    padding: 6px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+}
+
+.auth-tab {
+    min-height: 42px;
+    border: none;
+    background: transparent;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: inherit;
+    padding: 10px 12px;
+}
+
+.auth-tab.ativa {
+    background: #ffffff;
+    color: #6366f1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.auth-form {
+    display: none;
+}
+.auth-form.ativa { display: block; }
+
+.auth-form .campo input[type="email"],
+.auth-form .campo input[type="password"] {
+    width: 100%;
+    padding: 10px 14px;
+    height: 48px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #111827;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    background: #ffffff;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.auth-form .campo input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
+
+.btn-auth {
+    width: 100%;
+    padding: 14px;
+    min-height: 50px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    letter-spacing: 0.2px;
+    margin-top: 6px;
+}
+.btn-auth:active {
+    transform: scale(0.985);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.auth-msg {
+    margin-top: 14px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    min-height: 20px;
+    line-height: 1.5;
+}
+
+/* =========================
+   ABAS
+   ========================= */
 .abas {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -84,6 +287,9 @@ header h1 {
 .conteudo-aba { display: none; }
 .conteudo-aba.ativa { display: block; }
 
+/* =========================
+   CARDS DE RESUMO
+   ========================= */
 .resumo, .resumo-investimento {
     display: grid;
     grid-template-columns: 1fr;
@@ -112,7 +318,7 @@ header h1 {
 }
 
 .card .valor {
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 800;
     color: #111827;
     letter-spacing: -0.4px;
@@ -123,6 +329,9 @@ header h1 {
 .card.entrada .valor { color: #059669; }
 .card.saida .valor { color: #dc2626; }
 
+/* =========================
+   FORMULÁRIOS / TRANSAÇÕES
+   ========================= */
 .formulario, .transacoes {
     background: #ffffff;
     border-radius: 18px;
@@ -164,7 +373,6 @@ header h1 {
     background: #ffffff;
     -webkit-appearance: none;
     appearance: none;
-    border-radius: 12px;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
@@ -177,10 +385,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 #filtro, #filtroPrevisoes {
     width: auto;
     height: 40px;
-    padding: 8px 12px;
+    padding: 8px 30px 8px 12px;
     font-size: 13px;
     font-weight: 600;
     color: #374151;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
 }
 
 .campo input:focus,
@@ -272,10 +483,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .lista-transacoes { list-style: none; }
 
-.transacao-item {
+.item-transacao {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
     gap: 10px;
     padding: 12px;
     border-radius: 14px;
@@ -284,20 +494,27 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     border: 1px solid #f3f4f6;
 }
 
-.transacao-info {
-    min-width: 0;
+.item-col1 { min-width: 0; }
+.item-col2 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
 }
 
-.transacao-descricao {
+.item-descricao {
     font-weight: 700;
     color: #111827;
     margin-bottom: 6px;
     word-wrap: break-word;
     font-size: 14px;
     line-height: 1.35;
+    display: block;
 }
 
-.transacao-detalhes {
+.item-tags {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
@@ -310,37 +527,31 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     font-weight: 700;
     line-height: 1.8;
 }
+.tag.tipo-entrada { background: #d1fae5; color: #047857; }
+.tag.tipo-saida   { background: #fee2e2; color: #b91c1c; }
+.tag.cat-fixo     { background: #dbeafe; color: #1d4ed8; }
+.tag.cat-variavel { background: #fef3c7; color: #b45309; }
+.tag.data         { background: #e5e7eb; color: #4b5563; }
 
-.tag-tipo.entrada { background: #d1fae5; color: #047857; }
-.tag-tipo.saida   { background: #fee2e2; color: #b91c1c; }
-.tag-categoria.fixo     { background: #dbeafe; color: #1d4ed8; }
-.tag-categoria.variavel { background: #fef3c7; color: #b45309; }
-.tag-data { background: #e5e7eb; color: #4b5563; }
-
-.transacao-botoes {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    gap: 8px;
-}
-
-.transacao-valor {
+.item-valor {
     font-weight: 800;
     font-size: 17px;
     letter-spacing: -0.3px;
 }
+.item-valor.entrada { color: #059669; }
+.item-valor.saida   { color: #dc2626; }
 
-.transacao-valor.entrada { color: #059669; }
-.transacao-valor.saida   { color: #dc2626; }
+.item-acoes {
+    display: flex;
+    gap: 6px;
+}
 
-.btn-editar, .btn-excluir {
+.btn-edit, .btn-del {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
-    padding: 6px;
     width: 40px;
     height: 40px;
     min-width: 40px;
@@ -349,13 +560,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    padding: 0;
 }
-
-.btn-editar { color: #4b5563; }
-.btn-excluir { color: #4b5563; }
-
-.btn-editar:active { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
-.btn-excluir:active { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+.btn-edit:active { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
+.btn-del:active  { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
 
 .vazio {
     text-align: center;
@@ -366,6 +574,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     line-height: 1.5;
 }
 
+/* =========================
+   TABELA DE INVESTIMENTOS
+   ========================= */
 .tabela-meses-wrapper {
     overflow-x: auto;
     border-radius: 14px;
@@ -404,14 +615,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .tabela-meses thead th:first-child { border-top-left-radius: 14px; }
 .tabela-meses thead th:last-child  { border-top-right-radius: 14px; }
-
 .tabela-meses tbody tr:last-child td { border-bottom: none; }
+.tabela-meses td.positivo { color: #059669; font-weight: 700; }
 
-.tabela-meses td.verde {
-    color: #059669;
-    font-weight: 700;
-}
-
+/* =========================
+   MODAL DE EDIÇÃO
+   ========================= */
 .modal-fundo {
     position: fixed;
     top: 0;
@@ -481,11 +690,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     justify-content: center;
     font-weight: 400;
 }
-
 .modal-fechar:active { background: #e5e7eb; }
-
 .modal #formEdicao { padding: 14px 16px 16px; }
 
+/* =========================
+   DESKTOP (telas maiores)
+   ========================= */
 @media (min-width: 520px) {
     body {
         padding:
@@ -494,15 +704,19 @@ input[type="date"]::-webkit-calendar-picker-indicator {
             calc(32px + env(safe-area-inset-bottom));
     }
 
-    header { margin-bottom: 22px; }
-    header h1 { font-size: 30px; }
+    .header-content {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 12px;
+    }
+    header { text-align: left; margin-bottom: 22px; }
+    header h1 { font-size: 28px; }
 
     .abas {
         gap: 8px;
         padding: 8px;
         margin-bottom: 24px;
     }
-
     .aba {
         font-size: 14px;
         padding: 12px;
@@ -521,7 +735,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         padding: 20px;
         gap: 8px;
     }
-
     .card .label { font-size: 12px; }
     .card .valor { font-size: 24px; text-align: left; }
 
@@ -529,7 +742,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         padding: 24px;
         margin-bottom: 24px;
     }
-
     .formulario h2, .transacoes h2 { font-size: 18px; margin-bottom: 20px; }
 
     .campo { margin-bottom: 18px; }
@@ -551,34 +763,30 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         font-size: 16px;
         padding: 15px;
     }
-
     .btn-adicionar:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 22px rgba(99, 102, 241, 0.42);
     }
 
-    .transacao-item {
+    .item-transacao {
         flex-direction: row;
         align-items: center;
         gap: 14px;
         padding: 14px 16px;
     }
-
-    .transacao-item:hover { background: #f3f4f6; }
-    .transacao-info { width: auto; flex: 1; }
-    .transacao-descricao { font-size: 15px; }
+    .item-transacao:hover { background: #f3f4f6; }
+    .item-col1 { width: auto; flex: 1; }
+    .item-descricao { font-size: 15px; }
     .tag { font-size: 11px; padding: 3px 11px; }
-
-    .transacao-botoes {
+    .item-col2 {
         width: auto;
         justify-content: flex-end;
         gap: 6px;
     }
+    .item-valor { margin-left: 8px; font-size: 17px; }
 
-    .transacao-valor { margin-left: 8px; font-size: 17px; }
-
-    .btn-editar:hover { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
-    .btn-excluir:hover { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+    .btn-edit:hover { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
+    .btn-del:hover  { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
 
     .tabela-meses { font-size: 13px; }
     .tabela-meses th, .tabela-meses td { padding: 12px 10px; }
@@ -587,18 +795,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         padding: 24px;
         align-items: center;
     }
-
     .modal {
         border-radius: 22px;
         max-height: 90vh;
         padding-bottom: 24px;
     }
-
-    .modal-header {
-        padding: 20px 24px 14px;
-    }
-
-    .modal #formEdicao {
-        padding: 18px 24px 24px;
-    }
+    .modal-header { padding: 20px 24px 14px; }
+    .modal #formEdicao { padding: 18px 24px 24px; }
 }
