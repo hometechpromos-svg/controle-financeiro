@@ -20,11 +20,21 @@ window.addEventListener('unhandledrejection', function(ev) {
 // ==================== CONFIG ====================
 const SUPABASE_URL = "https://wcoxenaodhqnugrbmflk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_aqgSyFe4DNHLDepj03BAvQ_f9GzjNDL";
+window.__supabaseUrl = SUPABASE_URL;  // Garante que script inline vai ter também
+window.__supabaseKey = SUPABASE_KEY;
 let transacoes = [];
 let previsoes = [];
 let usuarioAtual = null;
 let telefoneTemporario = '';
 let supabase = null;
+
+// Sincroniza usuarioAtual <-> window.__usuario (o script inline usa window.__usuario)
+function sincUsuarioGlobal(){
+    if (window.__usuario && !usuarioAtual) usuarioAtual = window.__usuario;
+    if (usuarioAtual) window.__usuario = usuarioAtual;
+    if (telefoneTemporario) window.__telefoneTemp = telefoneTemporario;
+    if (window.__telefoneTemp && !telefoneTemporario) telefoneTemporario = window.__telefoneTemp;
+}
 
 // ==================== AUX ====================
 function limparTelefone(t) { return String(t||'').replace(/\D/g,''); }
@@ -135,8 +145,11 @@ async function sbFetch(path, opcoes={}) {
 }
 
 // ==================== ETAPA 1: VERIFICAR TELEFONE (BOTÃO CONTINUAR) ====================
-window.etapa1_verificarTelefone = async function() {
-    console.log('👉 etapa1_verificarTelefone chamado');
+// 1) Salvamos a FUNÇÃO REAL em window.__appReal_etapa1 (o script inline chama essa se existir)
+// 2) Depois sobrescrevemos window.etapa1_verificarTelefone com a versão real
+window.__appReal_etapa1 = async function etapa1_real() {
+    sincUsuarioGlobal();
+    console.log('👉 etapa1_verificarTelefone (app.js REAL)');
     if (!supabase) { setMsg('msgTelefone','⏳ Carregando sistema... tente em 2s','#34d399'); return; }
     const input = document.getElementById('telefoneAcesso');
     const tel = limparTelefone(input.value);
@@ -157,7 +170,8 @@ window.etapa1_verificarTelefone = async function() {
         } catch(e) {}
     }
 
-    telefoneTemporario = tel;
+    telefoneTemporario = tel; sincUsuarioGlobal();
+
     const blocoLogin = document.getElementById('blocoSenhaLogin');
     const blocoCad   = document.getElementById('blocoSenhaCadastro');
     const subt = document.getElementById('txtSubtituloSenha');
@@ -168,10 +182,13 @@ window.etapa1_verificarTelefone = async function() {
     mostrarTela2Senha();
     try { setTimeout(()=>{ const i = existe ? document.getElementById('senhaLogin') : document.getElementById('senhaNova1'); if(i) i.focus(); }, 150); } catch(e){}
 };
+// Agora marca a função global (se o script inline já tinha criado uma placeholder, substituímos pela real)
+window.etapa1_verificarTelefone = window.__appReal_etapa1;
 
-// ==================== ETAPA 2A: LOGAR COM SENHA ====================
-window.etapa2_loginSenha = async function() {
-    console.log('👉 etapa2_loginSenha');
+// ==================== ETAPA 2A - LOGAR COM SENHA ====================
+window.__appReal_etapa2a = async function etapa2a_real() {
+    sincUsuarioGlobal();
+    console.log('👉 etapa2_loginSenha (app.js REAL)');
     if (!telefoneTemporario) { voltarParaTelefone(); return; }
     const s = document.getElementById('senhaLogin').value;
     if (!s || s.length < 6) { setMsg('msgSenhaLogin','❌ Senha inválida (mínimo 6)','#f87171'); return; }
@@ -185,7 +202,6 @@ window.etapa2_loginSenha = async function() {
     } catch(e){}
 
     if (!ok) {
-        // Tentativa 2: via fetch com header
         usuarioAtual = { telefone: telefoneTemporario };
         const r2 = await sbFetch('/usuarios?telefone=eq.'+encodeURIComponent(telefoneTemporario)+'&select=senha_hash&limit=1');
         usuarioAtual = null;
@@ -194,16 +210,18 @@ window.etapa2_loginSenha = async function() {
 
     if (!ok) { setMsg('msgSenhaLogin','❌ Senha incorreta!','#f87171'); return; }
 
-    usuarioAtual = { telefone: telefoneTemporario };
+    usuarioAtual = { telefone: telefoneTemporario }; sincUsuarioGlobal();
     try { localStorage.setItem('cf_usuario_atual', JSON.stringify(usuarioAtual)); } catch(e){}
     setMsg('msgSenhaLogin','✅ Entrando...','#34d399');
     await carregarDados();
     setTimeout(()=>{ setMsg('msgSenhaLogin',''); mostrarTelaApp(); }, 400);
 };
+window.etapa2_loginSenha = window.__appReal_etapa2a;
 
-// ==================== ETAPA 2B: CADASTRAR SENHA NOVA ====================
-window.etapa2_cadastrarSenha = async function() {
-    console.log('👉 etapa2_cadastrarSenha');
+// ==================== ETAPA 2B - CADASTRAR SENHA NOVA ====================
+window.__appReal_etapa2b = async function etapa2b_real() {
+    sincUsuarioGlobal();
+    console.log('👉 etapa2_cadastrarSenha (app.js REAL)');
     if (!telefoneTemporario) { voltarParaTelefone(); return; }
     const s1 = document.getElementById('senhaNova1').value;
     const s2 = document.getElementById('senhaNova2').value;
@@ -218,7 +236,6 @@ window.etapa2_cadastrarSenha = async function() {
         const msg = String(r.error.message||'').toLowerCase();
         if (msg.includes('duplicate') || msg.includes('unique') || String(r.error.status)==='23505') {
             setMsg('msgSenhaCadastro','⚠️ Já tem cadastro! Mostrando tela de login...','#f59e0b');
-            telefoneTemporario = telefoneTemporario;
             setTimeout(()=>{
                 const bl = document.getElementById('blocoSenhaLogin'), bc = document.getElementById('blocoSenhaCadastro');
                 if (bl) bl.style.display='block'; if (bc) bc.style.display='none';
@@ -231,12 +248,13 @@ window.etapa2_cadastrarSenha = async function() {
         return;
     }
 
-    usuarioAtual = { telefone: telefoneTemporario };
+    usuarioAtual = { telefone: telefoneTemporario }; sincUsuarioGlobal();
     try { localStorage.setItem('cf_usuario_atual', JSON.stringify(usuarioAtual)); } catch(e){}
     setMsg('msgSenhaCadastro','✅ Conta criada!','#34d399');
     await carregarDados();
     setTimeout(()=>{ setMsg('msgSenhaCadastro',''); mostrarTelaApp(); }, 500);
 };
+window.etapa2_cadastrarSenha = window.__appReal_etapa2b;
 
 // ==================== CARREGAR DADOS / SALVAR LOCAL ====================
 function chaveLocal(n){ return usuarioAtual ? 'cf_'+n+'_'+usuarioAtual.telefone : ''; }
@@ -247,6 +265,7 @@ function salvarLocal() {
 }
 
 async function carregarDados() {
+    sincUsuarioGlobal();
     if (!usuarioAtual) return;
     console.log('👉 carregarDados');
     let okC = false, okP = false;
@@ -256,6 +275,8 @@ async function carregarDados() {
     if (!okP) { try { previsoes = JSON.parse(localStorage.getItem(chaveLocal('previsoes'))||'[]'); } catch(e){previsoes=[];} }
     atualizarUI();
 }
+// Para o script inline chamar quando logar (via script inline, antes do app.js estar pronto)
+window.__carregarDadosApp = carregarDados;
 
 // ==================== UI ====================
 function atualizarUI(){ atualizarResumo(); renderTransacoes(); renderPrevisoes(); }
@@ -486,6 +507,7 @@ function inicializarUI() {
 // ==================== INICIAR TUDO ====================
 async function inicializarApp() {
     console.log('▶️ inicializarApp INICIO');
+    sincUsuarioGlobal();
     if (window.supabase && window.supabase.createClient) {
         try {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {

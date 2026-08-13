@@ -438,6 +438,240 @@
         </div>
     </div>
 
+    <script>
+    /* =========================================================
+       🔴 SCRIPT DE GARANTIA TOTAL — EXECUTA ANTES DE TUDO
+       Funções JÁ EXISTEM no window (NUNCA MAIS "is not a function")
+       app.js pode sobrescrever depois sem problema.
+       ========================================================= */
+    (function(){
+        console.log('🔴 SCRIPT INLINE DE GARANTIA EXECUTADO');
+
+        // ========== CONFIG (SUPABASE) ==========
+        window.__supabaseUrl = "https://wcoxenaodhqnugrbmflk.supabase.co";
+        window.__supabaseKey = "sb_publishable_aqgSyFe4DNHLDepj03BAvQ_f9GzjNDL";
+
+        function limparTelefone(t){ return String(t||'').replace(/\D/g,''); }
+        function fmtTel(t){ t=String(t||''); if(t.length<10)return t; return '📱 ('+t.slice(0,2)+') '+t.slice(2,t.length-4)+'-'+t.slice(-4); }
+        function esconderTodas(){
+            try{['tela1Telefone','tela2Senha','telaApp'].forEach(function(id){
+                var el = document.getElementById(id); if(!el) return;
+                el.classList.add('oculto');
+                el.style.setProperty('display','none','important');
+            });}catch(e){}
+        }
+        function setMsg(id,txt,cor){
+            try{ var m=document.getElementById(id); if(!m) return; m.textContent=txt||''; if(cor) m.style.color=cor; else m.removeAttribute('style'); }catch(e){}
+        }
+        window.__telefoneTemp = '';
+
+        window.mostrarTela1Telefone = function(){
+            esconderTodas();
+            var el=document.getElementById('tela1Telefone'); if(!el){alert('tela1 não existe!');return;}
+            el.classList.remove('oculto'); el.style.setProperty('display','block','important');
+            try{document.getElementById('telefoneAcesso').focus();}catch(e){} try{window.scrollTo(0,0);}catch(e){}
+        };
+        window.mostrarTela2Senha = function(){
+            esconderTodas();
+            var el=document.getElementById('tela2Senha'); if(!el){alert('tela2 não existe!');return;}
+            el.classList.remove('oculto'); el.style.setProperty('display','block','important');
+            try{window.scrollTo(0,0);}catch(e){}
+        };
+        window.mostrarTelaApp = function(){
+            esconderTodas();
+            var el=document.getElementById('telaApp'); if(!el){alert('telaApp não existe!');return;}
+            el.classList.remove('oculto'); el.style.setProperty('display','block','important');
+            try{window.scrollTo(0,0);}catch(e){}
+        };
+        window.voltarParaTelefone = function(){
+            try{['senhaLogin','senhaNova1','senhaNova2'].forEach(function(i){var x=document.getElementById(i); if(x) x.value='';});}catch(e){}
+            try{['msgSenhaLogin','msgSenhaCadastro'].forEach(function(i){var x=document.getElementById(i); if(x){x.textContent='';x.removeAttribute('style');}});}catch(e){}
+            window.mostrarTela1Telefone();
+        };
+        window.fazerLogout = function(){
+            if(!confirm('Sair da conta?')) return;
+            window.__usuario = null; window.__telefoneTemp='';
+            try{ localStorage.removeItem('cf_usuario_atual'); }catch(e){}
+            try{['telefoneAcesso','senhaLogin','senhaNova1','senhaNova2'].forEach(function(i){var x=document.getElementById(i); if(x) x.value='';});}catch(e){}
+            window.mostrarTela1Telefone();
+        };
+
+        // ===== ETAPA 1 (VERIFICAR TELEFONE) — Placeholder inteligente:
+        // Se app.js já carregou e tem a versão real, chama a do app.js
+        // Senão, faz a verificação POR FETCH DIRETO (funciona mesmo sem app.js!)
+        window.etapa1_verificarTelefone = async function(){
+            console.log('👉 etapa1 (inline garantia)');
+            // Se a versão do app.js existe (definida depois), chama ela
+            if(window.__appReal_etapa1){ try { return window.__appReal_etapa1(); } catch(e){} }
+
+            if(!window.__supabaseKey || !window.__supabaseUrl){
+                setMsg('msgTelefone','⏳ Carregando sistema... (tente novamente em 3s)','#34d399');
+                return;
+            }
+            var input = document.getElementById('telefoneAcesso');
+            var tel = limparTelefone(input.value);
+            if(tel.length<10){ setMsg('msgTelefone','❌ Telefone inválido (com DDD)','#f87171'); return; }
+            setMsg('msgTelefone','🔍 Verificando...','#34d399');
+
+            // RPC: verificar_telefone(tel)
+            try{
+                var r = await fetch(window.__supabaseUrl + '/rest/v1/rpc/verificar_telefone', {
+                    method:'POST',
+                    headers:{
+                        'apikey':window.__supabaseKey,
+                        'Authorization':'Bearer '+window.__supabaseKey,
+                        'Content-Type':'application/json',
+                        'Prefer':'return=representation'
+                    },
+                    body: JSON.stringify({ tel: tel })
+                });
+                var dados = null; try{dados=await r.json();}catch(e){}
+                var existe = (!r.ok) ? false : (dados===1 || dados===true || dados==='t');
+
+                window.__telefoneTemp = tel;
+                var bl=document.getElementById('blocoSenhaLogin'), bc=document.getElementById('blocoSenhaCadastro');
+                var subt = document.getElementById('txtSubtituloSenha');
+                if(subt) subt.textContent = fmtTel(tel) + (existe?' • Digite sua senha':' • Crie sua senha');
+                if(bl) bl.style.display = existe ? 'block' : 'none';
+                if(bc) bc.style.display   = existe ? 'none'  : 'block';
+                setMsg('msgTelefone','');
+                window.mostrarTela2Senha();
+                setTimeout(function(){ try{(existe?document.getElementById('senhaLogin'):document.getElementById('senhaNova1')).focus();}catch(e){} },200);
+                return;
+            }catch(er){
+                setMsg('msgTelefone','❌ Erro: '+(er.message||er),'#f87171');
+            }
+        };
+
+        // ===== ETAPA 2A (LOGAR) ===== placeholder inline:
+        window.etapa2_loginSenha = async function(){
+            console.log('👉 etapa2_login (inline)');
+            if(window.__appReal_etapa2a){ try { return window.__appReal_etapa2a(); } catch(e){} }
+
+            if(!window.__telefoneTemp){ window.voltarParaTelefone(); return; }
+            var s = document.getElementById('senhaLogin').value;
+            if(!s || s.length<6){ setMsg('msgSenhaLogin','❌ Senha mínima 6','#f87171'); return; }
+            setMsg('msgSenhaLogin','🔐 Verificando...','#34d399');
+
+            // hash SHA256 inline
+            var hash = '';
+            try{
+                var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+                hash = Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+            }catch(e){ setMsg('msgSenhaLogin','❌ crypto não suportado','#f87171'); return; }
+
+            try{
+                var r = await fetch(window.__supabaseUrl+'/rest/v1/rpc/login_senha',{
+                    method:'POST',
+                    headers:{
+                        'apikey':window.__supabaseKey,
+                        'Authorization':'Bearer '+window.__supabaseKey,
+                        'Content-Type':'application/json',
+                        'Prefer':'return=representation'
+                    },
+                    body: JSON.stringify({ tel: window.__telefoneTemp, hash_senha: hash })
+                });
+                var d=null; try{d=await r.json();}catch(e){}
+                var ok = !r.ok ? false : (d===1||d===true||d==='t');
+                if(!ok){ setMsg('msgSenhaLogin','❌ Senha incorreta!','#f87171'); return; }
+
+                window.__usuario = { telefone: window.__telefoneTemp };
+                try{ localStorage.setItem('cf_usuario_atual', JSON.stringify(window.__usuario)); }catch(e){}
+                setMsg('msgSenhaLogin','✅ Entrando...','#34d399');
+                setTimeout(function(){ setMsg('msgSenhaLogin',''); window.mostrarTelaApp(); if(window.__carregarDadosApp) window.__carregarDadosApp(); }, 400);
+            }catch(er){
+                setMsg('msgSenhaLogin','❌ Erro: '+(er.message||er),'#f87171');
+            }
+        };
+
+        // ===== ETAPA 2B (CADASTRAR SENHA) ===== placeholder inline:
+        window.etapa2_cadastrarSenha = async function(){
+            console.log('👉 etapa2_cadastrar (inline)');
+            if(window.__appReal_etapa2b){ try { return window.__appReal_etapa2b(); } catch(e){} }
+
+            if(!window.__telefoneTemp){ window.voltarParaTelefone(); return; }
+            var s1=document.getElementById('senhaNova1').value;
+            var s2=document.getElementById('senhaNova2').value;
+            if(!s1||s1.length<6){ setMsg('msgSenhaCadastro','❌ Senha mínima 6','#f87171'); return; }
+            if(s1!==s2){ setMsg('msgSenhaCadastro','❌ Senhas diferentes','#f87171'); return; }
+            setMsg('msgSenhaCadastro','✨ Criando conta...','#34d399');
+            var hash='';
+            try{
+                var buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s1));
+                hash=Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+            }catch(e){setMsg('msgSenhaCadastro','❌ crypto não suportado','#f87171');return;}
+            try{
+                var r = await fetch(window.__supabaseUrl+'/rest/v1/usuarios',{
+                    method:'POST',
+                    headers:{
+                        'apikey':window.__supabaseKey,
+                        'Authorization':'Bearer '+window.__supabaseKey,
+                        'Content-Type':'application/json',
+                        'Prefer':'return=representation'
+                    },
+                    body: JSON.stringify({ telefone: window.__telefoneTemp, senha_hash: hash })
+                });
+                if(!r.ok){
+                    var d=null; try{d=await r.json();}catch(e){}
+                    var msg = String((d&&(d.message||d.error))||r.status||'').toLowerCase();
+                    if(msg.includes('duplicate')||msg.includes('unique')||msg==='23505'){
+                        setMsg('msgSenhaCadastro','⚠️ Já tem cadastro! Tela de login...','#f59e0b');
+                        setTimeout(function(){
+                            var bl=document.getElementById('blocoSenhaLogin'), bc=document.getElementById('blocoSenhaCadastro');
+                            if(bl) bl.style.display='block'; if(bc) bc.style.display='none';
+                            var s=document.getElementById('txtSubtituloSenha'); if(s) s.textContent=fmtTel(window.__telefoneTemp)+' • Digite sua senha';
+                            try{document.getElementById('senhaLogin').focus();}catch(e){}
+                        },900);
+                        return;
+                    }
+                    setMsg('msgSenhaCadastro','❌ Erro: '+((d&&(d.message||d.error))||r.status),'#f87171'); return;
+                }
+                window.__usuario={telefone:window.__telefoneTemp};
+                try{localStorage.setItem('cf_usuario_atual',JSON.stringify(window.__usuario));}catch(e){}
+                setMsg('msgSenhaCadastro','✅ Conta criada!','#34d399');
+                setTimeout(function(){setMsg('msgSenhaCadastro','');window.mostrarTelaApp(); if(window.__carregarDadosApp) window.__carregarDadosApp();},500);
+            }catch(er){
+                setMsg('msgSenhaCadastro','❌ Erro: '+(er.message||er),'#f87171');
+            }
+        };
+
+        // ===== BIND DOS BOTÕES (INLINE TAMBÉM, ANTES DO APP.JS!) =====
+        function bindaTodos(){
+            try{
+                var b1=document.getElementById('btnContinuarTelefone');
+                if(b1 && !b1.__jaBindInline){
+                    b1.__jaBindInline = true;
+                    b1.addEventListener('click', function(){ try{ window.etapa1_verificarTelefone(); }catch(e){ alert('ERRO CLIQUE 1: '+e.message); } });
+                }
+                var b2=document.getElementById('btnEntrarSenha');
+                if(b2 && !b2.__jaBindInline){
+                    b2.__jaBindInline=true;
+                    b2.addEventListener('click', function(){ try{ window.etapa2_loginSenha(); }catch(e){ alert('ERRO CLIQUE 2A: '+e.message); } });
+                }
+                var b3=document.getElementById('btnCriarConta');
+                if(b3 && !b3.__jaBindInline){
+                    b3.__jaBindInline=true;
+                    b3.addEventListener('click', function(){ try{ window.etapa2_cadastrarSenha(); }catch(e){ alert('ERRO CLIQUE 2B: '+e.message); } });
+                }
+                // Enter nos inputs
+                function bindEnter(i,b){
+                    var inp=document.getElementById(i), btn=document.getElementById(b); if(!inp||!btn||inp.__jaEnterInline) return;
+                    inp.__jaEnterInline=true;
+                    inp.addEventListener('keydown',function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); ev.stopPropagation(); btn.click(); } });
+                }
+                bindEnter('telefoneAcesso','btnContinuarTelefone');
+                bindEnter('senhaLogin','btnEntrarSenha');
+                bindEnter('senhaNova1','btnCriarConta');
+                bindEnter('senhaNova2','btnCriarConta');
+            }catch(e){}
+        }
+        if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', bindaTodos); }
+        else { bindaTodos(); }
+        window.__bindaTudoInline = bindaTodos;
+
+    })();
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
 </body>
