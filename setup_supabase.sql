@@ -4,6 +4,23 @@
 -- Cole tudo aqui → clique em "Run"
 -- =====================================================================
 
+-- =====================================================================
+-- 👉 ANTES DE TUDO: DESLIGUE A CONFIRMAÇÃO DE EMAIL! (MUITO IMPORTANTE)
+--    Senão você terá que enviar email para o usuário, e o cadastro
+--    automático e login não vão funcionar sem confirmar.
+--
+--    COMO FAZER:
+--    1. Abra https://app.supabase.com  →  entre no seu projeto
+--    2. Menu esquerdo → Authentication → Providers → Email
+--    3. ABAIXO em "Email Auth settings" → desmarque:
+--            ✗  Confirm email
+--       (deixe DESMARCADO!)
+--    4. Clique em "Save" (Salvar) no final da página.
+--
+--    👉 Se você NÃO desligar, sua conta admin precisará ser confirmada
+--       por email antes de logar e o botão de Criar Conta também!
+-- =====================================================================
+
 -- TABELA DE USUÁRIOS (auth.users já existe no Supabase automaticamente)
 
 -- =====================================================================
@@ -90,7 +107,12 @@ CREATE POLICY "Usuário apaga próprias previsões"
     USING (auth.uid() = user_id);
 
 -- =====================================================================
--- SUGESTÃO: Ative também a confirmação por email ou desative:
--- Supabase Dashboard → Authentication → Providers → Email
--- Desmarque "Confirm email" para não precisar confirmar email
+-- FIM! Resumindo o que você precisa fazer:
+--
+-- PASSO 1: Authentication → Providers → Email → DESLIGUE "Confirm email"
+-- PASSO 2: SQL Editor → Cole TODO esse arquivo → RUN (tudo verde)
+-- PASSO 3: Abra o app, clique em 🚀 Criar minha conta Admin agora
+-- PASSO 4: Use os dados:
+--              Email: admin@financas.app
+--              Senha: admin123
 -- =====================================================================

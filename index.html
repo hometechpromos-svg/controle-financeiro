@@ -38,7 +38,7 @@
                     <button class="auth-tab" id="tabCadastro" role="tab" onclick="trocarAuthTab('cadastro')">Criar Conta</button>
                 </div>
 
-                <!-- Formulário de LOGIN -->
+                <!-- Formulário de LOGIN (INICIALMENTE VISÍVEL) -->
                 <form id="formLogin" class="auth-form ativa">
                     <div class="campo">
                         <label>Email</label>
@@ -50,10 +50,23 @@
                     </div>
                     <button type="submit" class="btn-auth">Entrar</button>
                     <p class="auth-msg" id="loginMsg"></p>
+
+                    <!-- BOTÃO ADMIN: cria uma conta PRÉ-DEFINIDA (para você entrar rápido) -->
+                    <div class="admin-box" style="margin-top:22px;padding:14px;border:1px dashed rgba(16,185,129,0.45);border-radius:12px;background:rgba(16,185,129,0.06);">
+                        <p style="margin:0 0 10px 0;font-size:12px;color:#94a3b8;font-weight:600;">⚙️ ADMIN</p>
+                        <button type="button" class="btn-admin-criar" id="btnCriarAdmin" style="width:100%;padding:10px;background:#0b1a12;color:#34d399;border:1px solid rgba(16,185,129,0.5);border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;pointer-events:auto;touch-action:manipulation;">
+                            🚀 Criar minha conta Admin agora
+                        </button>
+                        <p class="admin-info" style="margin:9px 0 0 0;font-size:11px;color:#64748b;line-height:1.5;">
+                            Email: <b>admin@financas.app</b><br>
+                            Senha: <b>admin123</b><br>
+                            <span style="color:#94a3b8;">Clique 1 vez para criar e depois use esses dados para entrar.</span>
+                        </p>
+                    </div>
                 </form>
 
-                <!-- Formulário de CADASTRO ATUALIZADO: Nome, Telefone, Email, Senha -->
-                <form id="formCadastro" class="auth-form" hidden style="display:none;visibility:hidden;">
+                <!-- Formulário de CADASTRO (INICIALMENTE ESCONDIDO COM TUDO!) -->
+                <form id="formCadastro" class="auth-form" hidden style="display:none !important;visibility:hidden !important;opacity:0 !important;height:0;overflow:hidden;">
                     <div class="campo">
                         <label>Nome completo</label>
                         <input type="text" id="cadastroNome" placeholder="Seu nome" autocomplete="name" required>

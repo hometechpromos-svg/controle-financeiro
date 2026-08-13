@@ -16,62 +16,129 @@ let previsoes = [];
 let usuarioAtual = null;
 
 // ==================== 1. AUTENTICAÇÃO ====================
-// TROCA DE ABAS — NÍVEL NUCLEAR (hidden + style + className, tudo junto!)
+// TROCA DE ABAS — 100% INLINE, NÃO PASSA POR NENHUMA FUNÇÃO PARA NÃO FALHAR!
 function trocarAuthTab(tipo) {
     try {
         const ehLogin = (tipo === 'login');
-        const idTabA     = ehLogin ? 'tabLogin'    : 'tabCadastro';
-        const idTabB     = ehLogin ? 'tabCadastro' : 'tabLogin';
-        const idFormA    = ehLogin ? 'formLogin'   : 'formCadastro';
-        const idFormB    = ehLogin ? 'formCadastro' : 'formLogin';
 
-        const tabA = document.getElementById(idTabA);
-        const tabB = document.getElementById(idTabB);
-        const formA = document.getElementById(idFormA); // Form que VAI APARECER
-        const formB = document.getElementById(idFormB); // Form que VAI SUMIR
+        // ============== GET ELEMENTOS DIRETOS ==============
+        const tabLogin     = document.getElementById('tabLogin');
+        const tabCadastro  = document.getElementById('tabCadastro');
+        const formLogin    = document.getElementById('formLogin');
+        const formCadastro = document.getElementById('formCadastro');
 
-        // ====== 1. Abas ======
-        if (tabA) { tabA.className = 'auth-tab ativa'; tabA.style.backgroundColor=''; }
-        if (tabB) { tabB.className = 'auth-tab';       tabB.style.backgroundColor=''; }
-
-        // ====== 2. FORM QUE VAI APARECER (3 MÉTODOS JUNTOS!) ======
-        if (formA) {
-            formA.hidden = false;                            // HTML native
-            formA.removeAttribute('hidden');                 // remove attr
-            formA.style.removeProperty('display');
-            formA.style.removeProperty('visibility');
-            formA.style.removeProperty('opacity');
-            formA.style.removeProperty('height');
-            formA.style.removeProperty('overflow');
-            formA.style.display    = 'block';                // inline
-            formA.style.visibility = 'visible';              // inline
-            formA.style.opacity    = '1';
-            formA.style.height     = 'auto';
-            formA.style.overflow   = 'visible';
-            formA.className = 'auth-form ativa';             // classe
+        if (!tabLogin || !tabCadastro || !formLogin || !formCadastro) {
+            alert('❌ ERRO CRÍTICO: Elementos da tela de login não encontrados! Recarregue a página.');
+            return;
         }
 
-        // ====== 3. FORM QUE VAI SUMIR ======
-        if (formB) {
-            formB.hidden = true;                             // HTML native
-            formB.setAttribute('hidden', '');
-            formB.style.display    = 'none';                 // inline
-            formB.style.visibility = 'hidden';
-            formB.style.opacity    = '0';
-            formB.style.height     = '0';
-            formB.style.overflow   = 'hidden';
-            formB.className = 'auth-form';                   // classe
+        // ============== 1º PASSO: SEMPRE ESCONDE OS DOIS FORMULÁRIOS PRIMEIRO ==============
+        // Assim não tem lógica de quem é quem, garante estado limpo.
+        formLogin.hidden = true;
+        formLogin.setAttribute('hidden', '');
+        formLogin.style.setProperty('display', 'none', 'important');
+        formLogin.style.setProperty('visibility', 'hidden', 'important');
+        formLogin.style.setProperty('opacity', '0', 'important');
+        formLogin.style.setProperty('height', '0', 'important');
+        formLogin.style.setProperty('overflow', 'hidden', 'important');
+        formLogin.className = 'auth-form';
+
+        formCadastro.hidden = true;
+        formCadastro.setAttribute('hidden', '');
+        formCadastro.style.setProperty('display', 'none', 'important');
+        formCadastro.style.setProperty('visibility', 'hidden', 'important');
+        formCadastro.style.setProperty('opacity', '0', 'important');
+        formCadastro.style.setProperty('height', '0', 'important');
+        formCadastro.style.setProperty('overflow', 'hidden', 'important');
+        formCadastro.className = 'auth-form';
+
+        // ============== 2º PASSO: ABAS (sempre remove ativa primeiro) ==============
+        tabLogin.className    = 'auth-tab';
+        tabCadastro.className = 'auth-tab';
+        tabLogin.style.removeProperty('background-color');
+        tabCadastro.style.removeProperty('background-color');
+
+        // ============== 3º PASSO: MOSTRA SOMENTE O QUE PEDIRAM ==============
+        if (ehLogin) {
+            tabLogin.className = 'auth-tab ativa';
+            formLogin.hidden = false;
+            formLogin.removeAttribute('hidden');
+            formLogin.style.setProperty('display', 'block', 'important');
+            formLogin.style.setProperty('visibility', 'visible', 'important');
+            formLogin.style.setProperty('opacity', '1', 'important');
+            formLogin.style.setProperty('height', 'auto', 'important');
+            formLogin.style.setProperty('overflow', 'visible', 'important');
+            formLogin.className = 'auth-form ativa';
+        } else {
+            tabCadastro.className = 'auth-tab ativa';
+            formCadastro.hidden = false;
+            formCadastro.removeAttribute('hidden');
+            formCadastro.style.setProperty('display', 'block', 'important');
+            formCadastro.style.setProperty('visibility', 'visible', 'important');
+            formCadastro.style.setProperty('opacity', '1', 'important');
+            formCadastro.style.setProperty('height', 'auto', 'important');
+            formCadastro.style.setProperty('overflow', 'visible', 'important');
+            formCadastro.className = 'auth-form ativa';
         }
 
-        // ====== 4. Limpa mensagens ======
+        // ============== 4º: Limpa mensagens ==============
         const mLogin = document.getElementById('loginMsg');
         const mCad  = document.getElementById('cadastroMsg');
         if (mLogin) { mLogin.textContent = ''; mLogin.removeAttribute('style'); }
         if (mCad)   { mCad.textContent = '';   mCad.removeAttribute('style'); }
 
+        console.log('[OK] Trocou para aba:', tipo);
+
     } catch(e) {
         console.warn('trocarAuthTab ERRO:', e);
         alert('❌ Erro ao trocar aba: ' + e.message);
+    }
+}
+
+// ==================== CRIAR CONTA ADMIN (PRÉ-DEFINIDA — 1 clique)
+async function criarContaAdmin() {
+    const btn = document.getElementById('btnCriarAdmin');
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = '⏳ Criando conta admin...'; }
+    const msg = document.getElementById('loginMsg');
+    msg.textContent = '✨ Criando conta admin...';
+    msg.style.color = '#34d399';
+
+    const { data, error } = await supabase.auth.signUp({
+        email: 'admin@financas.app',
+        password: 'admin123',
+        options: { data: { nome: 'Admin Finanças', telefone: '(11) 99999-9999', admin: true } }
+    });
+
+    if (error) {
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = '🚀 Criar minha conta Admin agora'; }
+        if (error.message.includes('already') || error.message.includes('usuário') || error.message.includes('User')) {
+            msg.textContent = '✅ Conta admin JÁ EXISTE! Use → admin@financas.app / admin123 para entrar.';
+            msg.style.color = '#10b981';
+            // Pré-preenche os campos
+            document.getElementById('loginEmail').value = 'admin@financas.app';
+            document.getElementById('loginSenha').value = 'admin123';
+        } else {
+            msg.textContent = '❌ Erro: ' + error.message;
+            msg.style.color = '#f87171';
+        }
+        return;
+    }
+
+    // Sucesso
+    if (data?.session?.user) {
+        msg.textContent = '✅ Conta admin criada! Entrando automaticamente...';
+        msg.style.color = '#10b981';
+    } else {
+        msg.textContent = '✅ Conta admin criada! Agora faça login: email=admin@financas.app / senha=admin123';
+        msg.style.color = '#10b981';
+        document.getElementById('loginEmail').value = 'admin@financas.app';
+        document.getElementById('loginSenha').value = 'admin123';
+        if (btn) {
+            btn.textContent = '✅ Conta admin pronta! Já pode entrar.';
+            btn.style.opacity = '1';
+            btn.style.backgroundColor = '#052e1c';
+            btn.disabled = true;
+        }
     }
 }
 
@@ -239,34 +306,29 @@ function inicializarUI() {
     document.getElementById('data').valueAsDate = new Date();
     document.getElementById('dataPrevisao').valueAsDate = new Date();
 
-    // ==================== ABAS DE AUTENTICAÇÃO (CLIQUE GARANTIDO!)
+    // ==================== ABAS DE AUTENTICAÇÃO — ATRELAMENTO DIRETO!
+    // Faz o BOTÃO CHAMAR A FUNÇÃO. Zero intermediários.
     const tabLogin = document.getElementById('tabLogin');
     const tabCadastro = document.getElementById('tabCadastro');
-    const tabForceTroca = (ev, tipo) => {
-        if (ev) {
-            try { ev.preventDefault(); } catch(e){}
-            try { ev.stopPropagation(); } catch(e){}
-            try { ev.stopImmediatePropagation(); } catch(e){}
-        }
-        setTimeout(() => trocarAuthTab(tipo), 0);
-    };
+    const btnAdmin = document.getElementById('btnCriarAdmin');
+
     if (tabLogin) {
-        tabLogin.onclick = (e) => tabForceTroca(e, 'login');
-        try {
-            tabLogin.addEventListener('click', (e) => tabForceTroca(e, 'login'), true);
-        } catch(e){}
-        try {
-            tabLogin.addEventListener('touchend', (e) => tabForceTroca(e, 'login'), { passive: false, capture: true });
-        } catch(e){}
+        tabLogin.onclick = function() {
+            try { trocarAuthTab('login'); } catch(e){ alert('Erro login: '+e.message); }
+            return false;
+        };
     }
     if (tabCadastro) {
-        tabCadastro.onclick = (e) => tabForceTroca(e, 'cadastro');
-        try {
-            tabCadastro.addEventListener('click', (e) => tabForceTroca(e, 'cadastro'), true);
-        } catch(e){}
-        try {
-            tabCadastro.addEventListener('touchend', (e) => tabForceTroca(e, 'cadastro'), { passive: false, capture: true });
-        } catch(e){}
+        tabCadastro.onclick = function() {
+            try { trocarAuthTab('cadastro'); } catch(e){ alert('Erro cadastro: '+e.message); }
+            return false;
+        };
+    }
+    if (btnAdmin) {
+        btnAdmin.onclick = function() {
+            try { criarContaAdmin(); } catch(e){ alert('Erro criar admin: '+e.message); }
+            return false;
+        };
     }
 
     // Abas do app
