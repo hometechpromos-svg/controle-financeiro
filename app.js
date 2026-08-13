@@ -1,5 +1,4 @@
 // 🔴 =============== TRATA QUALQUER ERRO DE JAVASCRIPT NA PÁGINA ===============
-// 👉 Se qualquer coisa der errado no JS, aparecera um ALERT com o erro exato!
 window.onerror = function(message, source, lineno, colno, error) {
     try {
         alert(
@@ -26,9 +25,42 @@ const SUPABASE_KEY = "sb_publishable_aqgSyFe4DNHLDepj03BAvQ_f9GzjNDL";
 let transacoes = [];
 let previsoes = [];
 let usuarioAtual = null;
-let supabase = null; // inicializado depois no DOMContentLoaded
+let supabase = null;
 
 // ==================== 1. AUTENTICAÇÃO ====================
+
+// 👉 Alterna para BLOCO DE LOGIN (esconde cadastro, mostra login)
+function mostrarLogin(e) {
+    if (e) { try { e.preventDefault(); } catch(x){} try { e.stopPropagation(); } catch(x){} }
+    try {
+        document.getElementById('blocoLogin').style.display    = 'block';
+        document.getElementById('blocoCadastro').style.display = 'none';
+        // limpa msgs
+        const mL = document.getElementById('loginMsg');
+        const mC = document.getElementById('cadastroMsg');
+        if (mL) { mL.textContent=''; mL.removeAttribute('style'); }
+        if (mC) { mC.textContent=''; mC.removeAttribute('style'); }
+    } catch(err) {
+        alert('Erro mostrarLogin: ' + err.message);
+    }
+    return false;
+}
+
+// 👉 Alterna para BLOCO DE CADASTRO (esconde login, mostra cadastro)
+function mostrarCadastro(e) {
+    if (e) { try { e.preventDefault(); } catch(x){} try { e.stopPropagation(); } catch(x){} }
+    try {
+        document.getElementById('blocoLogin').style.display    = 'none';
+        document.getElementById('blocoCadastro').style.display = 'block';
+        const mL = document.getElementById('loginMsg');
+        const mC = document.getElementById('cadastroMsg');
+        if (mL) { mL.textContent=''; mL.removeAttribute('style'); }
+        if (mC) { mC.textContent=''; mC.removeAttribute('style'); }
+    } catch(err) {
+        alert('Erro mostrarCadastro: ' + err.message);
+    }
+    return false;
+}
 
 // 👉 MOSTRA A TELA DE LOGIN (esconde app)
 function mostrarAuth() {
@@ -52,69 +84,6 @@ function mostrarApp() {
     telaApp.classList.remove('oculto');
     const elUser = document.getElementById('userEmail');
     if (elUser) elUser.textContent = usuarioAtual?.email || '';
-}
-
-// 👉 BOTÃO ADMIN: Tenta LOGAR primeiro, se não existir a conta, CRIA e depois LOGA.
-async function criarOuEntrarAdmin() {
-    if (!supabase) return alert('❌ Supabase não iniciou ainda. Recarregue a página!');
-
-    const ADMIN_EMAIL = 'admin@financas.app';
-    const ADMIN_SENHA = 'admin123';
-    const ADMIN_NOME = 'Admin Finanças';
-    const ADMIN_TEL = '(11) 99999-9999';
-
-    const btn = document.getElementById('btnEntrarAdmin');
-    const msg = document.getElementById('loginMsg');
-    if (btn) { btn.disabled = true; btn.style.opacity = '0.65'; btn.textContent = '⏳ Processando...'; }
-    if (msg) { msg.textContent = '🔐 Verificando conta admin...'; msg.style.color = '#34d399'; }
-
-    // ===== PASSO 1: Tenta LOGAR (se a conta já existir) =====
-    let rLogin = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password: ADMIN_SENHA });
-    if (!rLogin.error && rLogin.data?.session?.user) {
-        if (msg) msg.textContent = '✅ Logado com sucesso! Entrando...';
-        // usuarioAtual e mostrarApp são tratados no onAuthStateChange
-        if (btn) { btn.textContent = '✅ Logado!'; btn.style.backgroundColor = '#052e1c'; }
-        return;
-    }
-
-    // ===== PASSO 2: Se deu erro no login (conta não existe, etc), TENTA CRIAR =====
-    if (msg) msg.textContent = '✨ Conta não existe. Criando conta admin...';
-    const rCad = await supabase.auth.signUp({
-        email: ADMIN_EMAIL,
-        password: ADMIN_SENHA,
-        options: {
-            data: { nome: ADMIN_NOME, telefone: ADMIN_TEL, admin: true }
-        }
-    });
-
-    if (rCad.error) {
-        if (msg) {
-            msg.textContent = '❌ Erro: ' + (rCad.error.message || String(rCad.error));
-            msg.style.color = '#f87171';
-        }
-        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = '🚀 Entrar / Criar Conta Admin'; }
-        alert('❌ Erro ao criar conta admin:\n' + rCad.error.message + '\n\nVerifique se voce desligou a confirmacao de email no Supabase!');
-        return;
-    }
-
-    // ===== PASSO 3: CRIADA COM SUCESSO =====
-    // Se o Supabase já logou automaticamente, onAuthStateChange cuida.
-    // Se não (confirmação de email LIGADA), avisa:
-    if (rCad.data?.session?.user) {
-        if (msg) { msg.textContent = '✅ Conta admin criada e logada! Entrando...'; msg.style.color = '#10b981'; }
-        if (btn) { btn.textContent = '✅ Entrou!'; btn.disabled = true; btn.style.backgroundColor = '#052e1c'; }
-    } else {
-        if (msg) {
-            msg.textContent = '⚠️ Conta admin criada, mas precisa confirmar email!\n'
-                + '👉 Va no Supabase, desligue "Confirm email" e clique de novo no botao.';
-            msg.style.color = '#f59e0b';
-        }
-        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = '🚀 Entrar / Criar Conta Admin'; }
-        alert('⚠️ Conta admin criada, mas a CONFIRMACAO DE EMAIL ESTA LIGADA no Supabase.\n\n'
-            + 'Para funcionar, va no Supabase Dashboard:\n'
-            + 'Authentication → Providers → Email → DESMARQUE "Confirm email" → Salve.\n\n'
-            + 'Depois, clique de novo no botao admin.');
-    }
 }
 
 // 👉 Submit do formLogin
@@ -165,7 +134,7 @@ async function submitCadastro(e) {
     }
 
     msg.style.color = '#34d399';
-    msg.textContent = '✨ Criando sua conta nova...';
+    msg.textContent = '✨ Criando sua conta...';
 
     const { data, error } = await supabase.auth.signUp({
         email,
@@ -182,13 +151,13 @@ async function submitCadastro(e) {
     if (data?.session?.user) {
         msg.textContent = '✅ Conta criada com sucesso! Entrando...';
         msg.style.color = '#10b981';
-        // onAuthStateChange cuida de mostrarApp e carregarDados
     } else {
         msg.textContent = '✅ Conta criada! Agora faça login com seus dados ali em cima. (Se pediu confirmação de email, desligue no Supabase)';
         msg.style.color = '#10b981';
-        // Pré-preenche os campos para o usuário já logar
         document.getElementById('loginEmail').value = email;
         document.getElementById('loginSenha').value = senha;
+        // Automaticamente mostra o login depois de 2 segundos
+        setTimeout(mostrarLogin, 2000);
     }
 }
 
@@ -201,21 +170,17 @@ async function carregarDados() {
     if (!usuarioAtual || !supabase) return;
 
     try {
-        // Carrega transações
         const { data: tData, error: tErr } = await supabase
             .from('transacoes')
             .select('*')
             .order('data', { ascending: false });
         if (!tErr) transacoes = tData || [];
-        else console.warn('Erro carregar transacoes:', tErr);
 
-        // Carrega previsões
         const { data: pData, error: pErr } = await supabase
             .from('previsoes')
             .select('*')
             .order('data', { ascending: false });
         if (!pErr) previsoes = pData || [];
-        else console.warn('Erro carregar previsoes:', pErr);
     } catch(e) {
         console.warn('carregarDados excecao:', e);
     }
@@ -223,7 +188,6 @@ async function carregarDados() {
     atualizarUI();
 }
 
-// Gerar ID seguro
 function nextId(array) {
     const max = array.reduce((m, x) => Math.max(m, x.id || 0), 0);
     return max + 1;
@@ -234,15 +198,24 @@ function inicializarUI() {
     try { document.getElementById('data').valueAsDate = new Date(); } catch(e){}
     try { document.getElementById('dataPrevisao').valueAsDate = new Date(); } catch(e){}
 
-    // ====== Forms de Login / Cadastro / Admin ======
+    // ====== FORMS DE LOGIN / CADASTRO ======
     const fLogin = document.getElementById('formLogin');
     if (fLogin) fLogin.addEventListener('submit', submitLogin);
 
     const fCad = document.getElementById('formCadastro');
     if (fCad) fCad.addEventListener('submit', submitCadastro);
 
-    const btnAdmin = document.getElementById('btnEntrarAdmin');
-    if (btnAdmin) btnAdmin.addEventListener('click', criarOuEntrarAdmin);
+    // ====== LINKS P/ ALTERNAR ENTRE LOGIN E CADASTRO ======
+    const linkLogin = document.getElementById('linkIrLogin');
+    const linkCad   = document.getElementById('linkIrCadastro');
+    if (linkLogin) {
+        linkLogin.onclick = mostrarLogin;
+        try { linkLogin.addEventListener('click', mostrarLogin, true); } catch(e){}
+    }
+    if (linkCad) {
+        linkCad.onclick = mostrarCadastro;
+        try { linkCad.addEventListener('click', mostrarCadastro, true); } catch(e){}
+    }
 
     // Abas do app (Transações / Previsões / Investimentos)
     document.querySelectorAll('.aba').forEach(btn => {
@@ -314,10 +287,7 @@ async function adicionarTransacao(e) {
     };
 
     const { error } = await supabase.from('transacoes').insert([nova]);
-    if (error) {
-        alert('Erro: ' + error.message);
-        return;
-    }
+    if (error) { alert('Erro: ' + error.message); return; }
     transacoes.unshift(nova);
     e.target.reset();
     document.getElementById('data').valueAsDate = new Date();
@@ -516,7 +486,6 @@ function simularInvestimento() {
     try { document.getElementById('resultadoInvestimento').style.display = 'block'; } catch(e){}
 }
 
-// ==================== UTILS ====================
 function escape(s) {
     return String(s).replace(/[&<>"']/g, c => (
         { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
@@ -524,13 +493,12 @@ function escape(s) {
 }
 
 // =============================================
-// 👉 START DO APP — SÓ EXECUTA DEPOIS QUE O DOM E SUPABASE ESTIVEREM PRONTOS
+// START
 // =============================================
 async function inicializarApp() {
     try {
         console.log('▶️ inicializarApp() executando...');
 
-        // ====== 1. VERIFICA SUPABASE CDN ======
         if (!window.supabase || !window.supabase.createClient) {
             alert(
                 '❌ ERRO: Biblioteca Supabase não foi carregada!\n\n'
@@ -545,19 +513,14 @@ async function inicializarApp() {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
             auth: { persistSession: true, autoRefreshToken: true }
         });
-        console.log('✅ Supabase cliente criado.');
 
-        // ====== 2. Service Worker (PWA) ======
         if ('serviceWorker' in navigator) {
             try { await navigator.serviceWorker.register('service-worker.js'); }
             catch(e) { console.warn('SW não carregou:', e); }
         }
 
-        // ====== 3. Inicializa UI primeiro (para binds de formulários) ======
         inicializarUI();
-        console.log('✅ UI inicializada.');
 
-        // ====== 4. Verifica sessão ======
         let sessaoExiste = false;
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -574,7 +537,6 @@ async function inicializarApp() {
             mostrarAuth();
         }
 
-        // ====== 5. Listener para mudanças de login/logout ======
         try {
             supabase.auth.onAuthStateChange(async (event, session) => {
                 console.log('🔄 Supabase auth evento:', event, '| usuario:', session?.user?.email || null);
@@ -604,5 +566,4 @@ async function inicializarApp() {
     }
 }
 
-// Start
 document.addEventListener('DOMContentLoaded', inicializarApp);
