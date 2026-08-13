@@ -16,64 +16,62 @@ let previsoes = [];
 let usuarioAtual = null;
 
 // ==================== 1. AUTENTICAÇÃO ====================
-// FUNÇÃO DE TROCA DE ABAS — MODO FORÇA BRUTA (NÃO FALHA!)
+// TROCA DE ABAS — NÍVEL NUCLEAR (hidden + style + className, tudo junto!)
 function trocarAuthTab(tipo) {
     try {
         const ehLogin = (tipo === 'login');
-        const idTabAtiva  = ehLogin ? 'tabLogin'    : 'tabCadastro';
-        const idTabInativa = ehLogin ? 'tabCadastro' : 'tabLogin';
-        const idFormAtiva = ehLogin ? 'formLogin'   : 'formCadastro';
-        const idFormInativa = ehLogin ? 'formCadastro' : 'formLogin';
+        const idTabA     = ehLogin ? 'tabLogin'    : 'tabCadastro';
+        const idTabB     = ehLogin ? 'tabCadastro' : 'tabLogin';
+        const idFormA    = ehLogin ? 'formLogin'   : 'formCadastro';
+        const idFormB    = ehLogin ? 'formCadastro' : 'formLogin';
 
-        // ================== 1. ATUALIZA ABAS (força className = NÃO TEM classList bug!)
-        const elTabAtiva = document.getElementById(idTabAtiva);
-        const elTabInativa = document.getElementById(idTabInativa);
-        if (elTabAtiva) {
-            elTabAtiva.className = 'auth-tab ativa';
-            elTabAtiva.removeAttribute('style');
-            elTabAtiva.setAttribute('aria-selected', 'true');
-        }
-        if (elTabInativa) {
-            elTabInativa.className = 'auth-tab';
-            elTabInativa.removeAttribute('style');
-            elTabInativa.setAttribute('aria-selected', 'false');
-        }
+        const tabA = document.getElementById(idTabA);
+        const tabB = document.getElementById(idTabB);
+        const formA = document.getElementById(idFormA); // Form que VAI APARECER
+        const formB = document.getElementById(idFormB); // Form que VAI SUMIR
 
-        // ================== 2. ATUALIZA FORMULÁRIOS — FORÇA INLINE + CLASSE!
-        const elFormAtivo = document.getElementById(idFormAtiva);
-        const elFormInativo = document.getElementById(idFormInativa);
-        if (elFormAtivo) {
-            elFormAtivo.className = 'auth-form ativa';
-            elFormAtivo.style.display = 'block';
-            elFormAtivo.style.visibility = 'visible';
-            elFormAtivo.style.opacity = '1';
-            elFormAtivo.style.height = 'auto';
-            elFormAtivo.style.overflow = 'visible';
-            elFormAtivo.style.width = '100%';
-        }
-        if (elFormInativo) {
-            elFormInativo.className = 'auth-form';
-            elFormInativo.style.display = 'none';
-            elFormInativo.style.visibility = 'hidden';
-            elFormInativo.style.opacity = '0';
-            elFormInativo.style.height = '0';
-            elFormInativo.style.overflow = 'hidden';
-            elFormInativo.style.width = '100%';
+        // ====== 1. Abas ======
+        if (tabA) { tabA.className = 'auth-tab ativa'; tabA.style.backgroundColor=''; }
+        if (tabB) { tabB.className = 'auth-tab';       tabB.style.backgroundColor=''; }
+
+        // ====== 2. FORM QUE VAI APARECER (3 MÉTODOS JUNTOS!) ======
+        if (formA) {
+            formA.hidden = false;                            // HTML native
+            formA.removeAttribute('hidden');                 // remove attr
+            formA.style.removeProperty('display');
+            formA.style.removeProperty('visibility');
+            formA.style.removeProperty('opacity');
+            formA.style.removeProperty('height');
+            formA.style.removeProperty('overflow');
+            formA.style.display    = 'block';                // inline
+            formA.style.visibility = 'visible';              // inline
+            formA.style.opacity    = '1';
+            formA.style.height     = 'auto';
+            formA.style.overflow   = 'visible';
+            formA.className = 'auth-form ativa';             // classe
         }
 
-        // ================== 3. LIMPA MENSAGENS
-        const elLoginMsg = document.getElementById('loginMsg');
-        const elCadMsg = document.getElementById('cadastroMsg');
-        if (elLoginMsg) { elLoginMsg.textContent = ''; elLoginMsg.removeAttribute('style'); }
-        if (elCadMsg)   { elCadMsg.textContent = '';   elCadMsg.removeAttribute('style'); }
+        // ====== 3. FORM QUE VAI SUMIR ======
+        if (formB) {
+            formB.hidden = true;                             // HTML native
+            formB.setAttribute('hidden', '');
+            formB.style.display    = 'none';                 // inline
+            formB.style.visibility = 'hidden';
+            formB.style.opacity    = '0';
+            formB.style.height     = '0';
+            formB.style.overflow   = 'hidden';
+            formB.className = 'auth-form';                   // classe
+        }
 
-        // ================== 4. DEBUG (pode ver no console se quiser)
-        console.log('[Auth] Troca de aba efetuada:', tipo,
-            ' | Form ativo visivel:', elFormAtivo ? (elFormAtivo.className + ' / display=' + elFormAtivo.style.display) : 'NULL');
+        // ====== 4. Limpa mensagens ======
+        const mLogin = document.getElementById('loginMsg');
+        const mCad  = document.getElementById('cadastroMsg');
+        if (mLogin) { mLogin.textContent = ''; mLogin.removeAttribute('style'); }
+        if (mCad)   { mCad.textContent = '';   mCad.removeAttribute('style'); }
 
     } catch(e) {
         console.warn('trocarAuthTab ERRO:', e);
-        alert('Erro ao trocar aba: ' + e.message);
+        alert('❌ Erro ao trocar aba: ' + e.message);
     }
 }
 
@@ -135,28 +133,73 @@ document.getElementById('formLogin').addEventListener('submit', async (e) => {
     const email = document.getElementById('loginEmail').value.trim();
     const senha = document.getElementById('loginSenha').value;
     const msg = document.getElementById('loginMsg');
-    msg.textContent = 'Entrando...';
-    msg.style.color = '#667eea';
+    msg.textContent = '🔐 Entrando...';
+    msg.style.color = '#34d399';
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
-    if (error) { msg.textContent = '❌ ' + error.message; msg.style.color = '#e74c3c'; }
+    if (error) { msg.textContent = '❌ ' + error.message; msg.style.color = '#f87171'; }
     else msg.textContent = '';
 });
 
 document.getElementById('formCadastro').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('cadastroEmail').value.trim();
-    const senha = document.getElementById('cadastroSenha').value;
-    const senha2 = document.getElementById('cadastroSenha2').value;
-    const msg = document.getElementById('cadastroMsg');
-    msg.style.color = '#667eea';
-    if (senha !== senha2) { msg.textContent = '❌ Senhas diferentes!'; msg.style.color = '#e74c3c'; return; }
-    if (senha.length < 6) { msg.textContent = '❌ Senha deve ter pelo menos 6 caracteres'; msg.style.color = '#e74c3c'; return; }
-    msg.textContent = 'Criando conta...';
-    const { data, error } = await supabase.auth.signUp({ email, password: senha });
-    if (error) { msg.textContent = '❌ ' + error.message; msg.style.color = '#e74c3c'; }
-    else {
-        msg.textContent = '✅ Conta criada! Verifique seu email (ou já pode logar se a confirmação estiver desativada)';
+    const nome     = document.getElementById('cadastroNome').value.trim();
+    const telefone = document.getElementById('cadastroTelefone').value.trim();
+    const email    = document.getElementById('cadastroEmail').value.trim();
+    const senha    = document.getElementById('cadastroSenha').value;
+    const msg      = document.getElementById('cadastroMsg');
+
+    // ===== Validações básicas =====
+    if (nome.length < 3) {
+        msg.textContent = '❌ Preencha seu nome (mínimo 3 letras)';
+        msg.style.color = '#f87171';
+        return;
+    }
+    if (telefone.length < 10) {
+        msg.textContent = '❌ Preencha seu telefone completo (com DDD)';
+        msg.style.color = '#f87171';
+        return;
+    }
+    if (!email.includes('@') || !email.includes('.')) {
+        msg.textContent = '❌ Digite um email válido';
+        msg.style.color = '#f87171';
+        return;
+    }
+    if (senha.length < 6) {
+        msg.textContent = '❌ Senha deve ter pelo menos 6 caracteres';
+        msg.style.color = '#f87171';
+        return;
+    }
+
+    msg.style.color = '#34d399';
+    msg.textContent = '✨ Criando sua conta...';
+
+    // ===== Cria o usuário no Supabase (salva NOME + TELEFONE nos metadata!) =====
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password: senha,
+        options: {
+            data: {
+                nome: nome,
+                telefone: telefone
+            }
+        }
+    });
+
+    if (error) {
+        msg.textContent = '❌ ' + error.message;
+        msg.style.color = '#f87171';
+        return;
+    }
+
+    // Conta criada com sucesso!
+    if (data?.session?.user) {
+        // Se o usuário já logou automaticamente (confirmação de email desligada)
+        msg.textContent = '✅ Conta criada! Entrando...';
         msg.style.color = '#10b981';
+    } else {
+        msg.textContent = '✅ Conta criada! Verifique seu email para confirmar (ou já pode entrar se a confirmação estiver desativada no Supabase)';
+        msg.style.color = '#10b981';
+        setTimeout(() => trocarAuthTab('login'), 2500); // ← automaticamente VOLTA PRO LOGIN DEPOIS DE CRIAR!
     }
 });
 
@@ -196,23 +239,34 @@ function inicializarUI() {
     document.getElementById('data').valueAsDate = new Date();
     document.getElementById('dataPrevisao').valueAsDate = new Date();
 
-    // ==================== ABAS DE AUTENTICAÇÃO (FALLBACK OBRIGATÓRIO!)
-    // Clica na aba, não confia no onclick inline do HTML
+    // ==================== ABAS DE AUTENTICAÇÃO (CLIQUE GARANTIDO!)
     const tabLogin = document.getElementById('tabLogin');
     const tabCadastro = document.getElementById('tabCadastro');
+    const tabForceTroca = (ev, tipo) => {
+        if (ev) {
+            try { ev.preventDefault(); } catch(e){}
+            try { ev.stopPropagation(); } catch(e){}
+            try { ev.stopImmediatePropagation(); } catch(e){}
+        }
+        setTimeout(() => trocarAuthTab(tipo), 0);
+    };
     if (tabLogin) {
-        tabLogin.addEventListener('click', (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            trocarAuthTab('login');
-        }, { capture: true, passive: false });
+        tabLogin.onclick = (e) => tabForceTroca(e, 'login');
+        try {
+            tabLogin.addEventListener('click', (e) => tabForceTroca(e, 'login'), true);
+        } catch(e){}
+        try {
+            tabLogin.addEventListener('touchend', (e) => tabForceTroca(e, 'login'), { passive: false, capture: true });
+        } catch(e){}
     }
     if (tabCadastro) {
-        tabCadastro.addEventListener('click', (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            trocarAuthTab('cadastro');
-        }, { capture: true, passive: false });
+        tabCadastro.onclick = (e) => tabForceTroca(e, 'cadastro');
+        try {
+            tabCadastro.addEventListener('click', (e) => tabForceTroca(e, 'cadastro'), true);
+        } catch(e){}
+        try {
+            tabCadastro.addEventListener('touchend', (e) => tabForceTroca(e, 'cadastro'), { passive: false, capture: true });
+        } catch(e){}
     }
 
     // Abas do app
