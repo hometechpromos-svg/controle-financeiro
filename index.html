@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
     <meta name="theme-color" content="#0b0f14">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -205,15 +205,21 @@
             <section id="aba-previsoes" class="conteudo-aba" role="tabpanel">
                 <section class="resumo">
                     <div class="card saldo">
-                        <span class="label">Saldo Previsto</span>
+                        <div class="card-label-wrap">
+                            <span class="label">Saldo Previsto</span>
+                        </div>
                         <span class="valor" id="saldoPrevisto">R$ 0,00</span>
                     </div>
                     <div class="card entrada">
-                        <span class="label">Entradas Previstas</span>
+                        <div class="card-label-wrap">
+                            <span class="label">Entradas Previstas</span>
+                        </div>
                         <span class="valor" id="totalEntradasPrevistas">R$ 0,00</span>
                     </div>
                     <div class="card saida">
-                        <span class="label">Saídas Previstas</span>
+                        <div class="card-label-wrap">
+                            <span class="label">Saídas Previstas</span>
+                        </div>
                         <span class="valor" id="totalSaidasPrevistas">R$ 0,00</span>
                     </div>
                 </section>
@@ -320,15 +326,21 @@
                 <section id="resultadoInvestimento" class="transacoes" style="display: none;">
                     <div class="resumo-investimento">
                         <div class="card saldo">
-                            <span class="label">Valor Final</span>
+                            <div class="card-label-wrap">
+                                <span class="label">Valor Final</span>
+                            </div>
                             <span class="valor" id="valorFinal">R$ 0,00</span>
                         </div>
                         <div class="card entrada">
-                            <span class="label">Total Investido</span>
+                            <div class="card-label-wrap">
+                                <span class="label">Total Investido</span>
+                            </div>
                             <span class="valor" id="totalInvestido">R$ 0,00</span>
                         </div>
                         <div class="card saida">
-                            <span class="label">Rendimento</span>
+                            <div class="card-label-wrap">
+                                <span class="label">Rendimento</span>
+                            </div>
                             <span class="valor" id="totalRendimento">R$ 0,00</span>
                         </div>
                     </div>
