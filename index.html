@@ -21,74 +21,80 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- ====== TELA DE CADASTRO / LOGIN (COMPACTA + COM SCROLL) ====== -->
-    <div id="telaAuth" class="tela-auth">
+    <!-- ====== TELA 1: APENAS TELEFONE (tela inicial) ====== -->
+    <div id="tela1Telefone" class="tela-auth">
         <div class="tela-auth-inner">
             <div class="auth-box">
-
-                <!-- LOGO SIMPLES -->
                 <div class="auth-logo-wrap">
                     <span class="auth-logo-emoji" aria-hidden="true">💰</span>
                 </div>
                 <h1 class="auth-titulo">Controle Financeiro</h1>
-                <p class="auth-subtitulo">Sincronize seus gastos em todos os dispositivos</p>
+                <p class="auth-subtitulo">Digite seu telefone para continuar</p>
 
-                <!-- ============================================= -->
-                <!-- 👉 FORMULÁRIO PRINCIPAL: CRIAR CONTA NOVA -->
-                <!-- ============================================= -->
-                <div id="blocoCadastro" style="display:block;">
-                    <h2 class="auth-sub-titulo" style="margin:0 0 14px 0;font-size:16px;color:#10b981;font-weight:700;">✨ Criar minha conta</h2>
+                <h2 class="auth-sub-titulo" style="margin:0 0 14px 0;font-size:16px;color:#10b981;font-weight:700;text-align:center;">📱 Passo 1 de 2</h2>
 
-                    <form id="formCadastro" onsubmit="try{event.preventDefault();event.stopPropagation();}catch(e){} if(window.submitCadastro){window.submitCadastro(event);} return false;">
-                        <div class="campo">
-                            <label>Nome completo</label>
-                            <input type="text" id="cadastroNome" placeholder="Seu nome" autocomplete="name" required>
-                        </div>
-                        <div class="campo">
-                            <label>Telefone / WhatsApp</label>
-                            <input type="tel" id="cadastroTelefone" placeholder="(00) 00000-0000" autocomplete="tel" required>
-                        </div>
-                        <div class="campo">
-                            <label>Email</label>
-                            <input type="email" id="cadastroEmail" placeholder="voce@email.com" autocomplete="email" required>
-                        </div>
+                <form id="formTelefone" onsubmit="try{event.preventDefault();event.stopPropagation();}catch(e){} if(window.etapa1_verificarTelefone){window.etapa1_verificarTelefone(event);} return false;">
+                    <div class="campo">
+                        <label>Telefone / WhatsApp</label>
+                        <input type="tel" id="telefoneAcesso" placeholder="(00) 00000-0000" autocomplete="tel" required>
+                    </div>
+                    <button type="submit" class="btn-auth" style="background:#16a34a;font-size:16px;font-weight:800;padding:16px 18px;min-height:52px;">➡️ Continuar</button>
+                    <p class="auth-msg" id="msgTelefone"></p>
+                </form>
+
+                <p style="text-align:center;margin-top:18px;font-size:12px;color:#64748b;line-height:1.45;">
+                    Segurança máxima! Só você tem acesso aos seus dados.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== TELA 2: SENHA (LOGIN ou CADASTRAR SENHA NOVA) ====== -->
+    <div id="tela2Senha" class="tela-auth oculto" style="display:none;">
+        <div class="tela-auth-inner">
+            <div class="auth-box">
+                <div class="auth-logo-wrap">
+                    <span class="auth-logo-emoji" aria-hidden="true">🔐</span>
+                </div>
+                <h1 class="auth-titulo">Controle Financeiro</h1>
+                <p class="auth-subtitulo" id="txtSubtituloSenha">Digite sua senha para entrar</p>
+
+                <!-- BOTÃO VOLTAR P/ TELA DO TELEFONE -->
+                <p style="margin:0 0 14px 0;text-align:left;">
+                    <a href="javascript:void(0);" onclick="window.voltarParaTelefone && window.voltarParaTelefone(); return false;" style="color:#34d399;font-size:13px;font-weight:700;text-decoration:underline;">← Alterar telefone</a>
+                </p>
+
+                <!-- ========== TELA 2A: JÁ TEM CADASTRO → PEDIR SENHA (LOGIN) ========== -->
+                <div id="blocoSenhaLogin">
+                    <h2 class="auth-sub-titulo" style="margin:0 0 14px 0;font-size:16px;color:#10b981;font-weight:700;text-align:center;">🔑 Digite sua senha</h2>
+
+                    <form id="formSenhaLogin" onsubmit="try{event.preventDefault();event.stopPropagation();}catch(e){} if(window.etapa2_loginSenha){window.etapa2_loginSenha(event);} return false;">
                         <div class="campo">
                             <label>Senha</label>
-                            <input type="password" id="cadastroSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6" required>
+                            <input type="password" id="senhaLogin" placeholder="Mínimo 6 caracteres" autocomplete="current-password" minlength="6" required>
                         </div>
-                        <button type="submit" class="btn-auth" style="background:#16a34a;">Criar Conta</button>
-                        <p class="auth-msg" id="cadastroMsg"></p>
+                        <button type="submit" class="btn-auth" style="background:#16a34a;font-size:16px;font-weight:800;padding:16px 18px;min-height:52px;">🚀 Entrar</button>
+                        <p class="auth-msg" id="msgSenhaLogin"></p>
                     </form>
-
-                    <p class="auth-link-login" style="text-align:center;margin-top:18px;font-size:13px;color:#94a3b8;">
-                        Já tem conta?
-                        <a href="javascript:void(0);" onclick="window.mostrarLogin && window.mostrarLogin();return false;" id="linkIrLogin" style="color:#34d399;font-weight:700;text-decoration:underline;cursor:pointer;touch-action:manipulation;">Entrar</a>
-                    </p>
                 </div>
 
-                <!-- ============================================= -->
-                <!-- 👉 FORMULÁRIO SECUNDÁRIO: LOGIN (inicialmente OCULTO) -->
-                <!-- ============================================= -->
-                <div id="blocoLogin" style="display:none;">
-                    <h2 class="auth-sub-titulo" style="margin:0 0 14px 0;font-size:16px;color:#10b981;font-weight:700;">🔐 Entrar na minha conta</h2>
+                <!-- ========== TELA 2B: NOVO USUÁRIO → CADASTRAR SENHA NOVA ========== -->
+                <div id="blocoSenhaCadastro" style="display:none;">
+                    <h2 class="auth-sub-titulo" style="margin:0 0 14px 0;font-size:16px;color:#10b981;font-weight:700;text-align:center;">✨ Cadastre sua senha</h2>
+                    <p style="text-align:center;color:#94a3b8;font-size:13px;margin:0 0 16px 0;">É a primeira vez com esse telefone. Crie uma senha para continuar:</p>
 
-                    <form id="formLogin" onsubmit="try{event.preventDefault();event.stopPropagation();}catch(e){} if(window.submitLogin){window.submitLogin(event);} return false;">
+                    <form id="formSenhaCadastro" onsubmit="try{event.preventDefault();event.stopPropagation();}catch(e){} if(window.etapa2_cadastrarSenha){window.etapa2_cadastrarSenha(event);} return false;">
                         <div class="campo">
-                            <label>Email</label>
-                            <input type="email" id="loginEmail" placeholder="voce@email.com" autocomplete="email" required>
+                            <label>Criar senha</label>
+                            <input type="password" id="senhaNova1" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6" required>
                         </div>
                         <div class="campo">
-                            <label>Senha</label>
-                            <input type="password" id="loginSenha" placeholder="Mínimo 6 caracteres" autocomplete="current-password" required>
+                            <label>Repetir senha</label>
+                            <input type="password" id="senhaNova2" placeholder="Repita a mesma senha" autocomplete="new-password" minlength="6" required>
                         </div>
-                        <button type="submit" class="btn-auth">Entrar</button>
-                        <p class="auth-msg" id="loginMsg"></p>
+                        <button type="submit" class="btn-auth" style="background:#16a34a;font-size:16px;font-weight:800;padding:16px 18px;min-height:52px;">✅ Criar minha conta</button>
+                        <p class="auth-msg" id="msgSenhaCadastro"></p>
                     </form>
-
-                    <p class="auth-link-cadastro" style="text-align:center;margin-top:18px;font-size:13px;color:#94a3b8;">
-                        Ainda não tem conta?
-                        <a href="javascript:void(0);" onclick="window.mostrarCadastro && window.mostrarCadastro();return false;" id="linkIrCadastro" style="color:#34d399;font-weight:700;text-decoration:underline;cursor:pointer;touch-action:manipulation;">Criar conta</a>
-                    </p>
                 </div>
 
             </div>
@@ -112,7 +118,7 @@
                         <span class="user-avatar">👤</span>
                         <span class="user-email" id="userEmail">—</span>
                     </div>
-                    <button type="button" class="btn-logout" onclick="fazerLogout()" title="Sair">🚪</button>
+                    <button type="button" class="btn-logout" onclick="window.fazerLogout && window.fazerLogout()" title="Sair">🚪</button>
                 </div>
             </header>
 
