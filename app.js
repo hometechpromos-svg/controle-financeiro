@@ -30,25 +30,32 @@ let supabase = null;
 // ==================== 1. AUTENTICAÇÃO ====================
 
 // 👉 Alterna para BLOCO DE LOGIN (esconde cadastro, mostra login)
-function mostrarLogin(e) {
-    if (e) { try { e.preventDefault(); } catch(x){} try { e.stopPropagation(); } catch(x){} }
+window.mostrarLogin = function mostrarLogin(e) {
+    if (e) {
+        try { e.preventDefault(); } catch(x){}
+        try { e.stopPropagation(); } catch(x){}
+        try { if (e.preventDefault) e.preventDefault(); } catch(x){}
+    }
     try {
         document.getElementById('blocoLogin').style.display    = 'block';
         document.getElementById('blocoCadastro').style.display = 'none';
-        // limpa msgs
         const mL = document.getElementById('loginMsg');
         const mC = document.getElementById('cadastroMsg');
         if (mL) { mL.textContent=''; mL.removeAttribute('style'); }
         if (mC) { mC.textContent=''; mC.removeAttribute('style'); }
+        try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch(x){}
     } catch(err) {
         alert('Erro mostrarLogin: ' + err.message);
     }
     return false;
-}
+};
 
 // 👉 Alterna para BLOCO DE CADASTRO (esconde login, mostra cadastro)
-function mostrarCadastro(e) {
-    if (e) { try { e.preventDefault(); } catch(x){} try { e.stopPropagation(); } catch(x){} }
+window.mostrarCadastro = function mostrarCadastro(e) {
+    if (e) {
+        try { e.preventDefault(); } catch(x){}
+        try { e.stopPropagation(); } catch(x){}
+    }
     try {
         document.getElementById('blocoLogin').style.display    = 'none';
         document.getElementById('blocoCadastro').style.display = 'block';
@@ -56,11 +63,12 @@ function mostrarCadastro(e) {
         const mC = document.getElementById('cadastroMsg');
         if (mL) { mL.textContent=''; mL.removeAttribute('style'); }
         if (mC) { mC.textContent=''; mC.removeAttribute('style'); }
+        try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch(x){}
     } catch(err) {
         alert('Erro mostrarCadastro: ' + err.message);
     }
     return false;
-}
+};
 
 // 👉 MOSTRA A TELA DE LOGIN (esconde app)
 function mostrarAuth() {
@@ -87,13 +95,13 @@ function mostrarApp() {
 }
 
 // 👉 Submit do formLogin
-async function submitLogin(e) {
-    e.preventDefault();
+window.submitLogin = async function submitLogin(e) {
+    try { if (e && e.preventDefault) e.preventDefault(); } catch(x){}
     if (!supabase) return alert('❌ Supabase não iniciou. Recarregue a página.');
     const email = document.getElementById('loginEmail').value.trim();
     const senha = document.getElementById('loginSenha').value;
     const msg = document.getElementById('loginMsg');
-    if (!email || !senha) return;
+    if (!email || !senha) return false;
     msg.textContent = '🔐 Entrando...';
     msg.style.color = '#34d399';
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
@@ -103,11 +111,12 @@ async function submitLogin(e) {
     } else {
         msg.textContent = '';
     }
-}
+    return false;
+};
 
 // 👉 Submit do formCadastro
-async function submitCadastro(e) {
-    e.preventDefault();
+window.submitCadastro = async function submitCadastro(e) {
+    try { if (e && e.preventDefault) e.preventDefault(); } catch(x){}
     if (!supabase) return alert('❌ Supabase não iniciou. Recarregue a página.');
     const nome     = document.getElementById('cadastroNome').value.trim();
     const telefone = document.getElementById('cadastroTelefone').value.trim();
@@ -115,22 +124,21 @@ async function submitCadastro(e) {
     const senha    = document.getElementById('cadastroSenha').value;
     const msg      = document.getElementById('cadastroMsg');
 
-    // Validações
     if (nome.length < 3) {
         msg.textContent = '❌ Preencha seu nome (mínimo 3 letras)';
-        msg.style.color = '#f87171'; return;
+        msg.style.color = '#f87171'; return false;
     }
     if (telefone.length < 10) {
         msg.textContent = '❌ Preencha seu telefone completo (com DDD)';
-        msg.style.color = '#f87171'; return;
+        msg.style.color = '#f87171'; return false;
     }
     if (!email.includes('@') || !email.includes('.')) {
         msg.textContent = '❌ Digite um email válido';
-        msg.style.color = '#f87171'; return;
+        msg.style.color = '#f87171'; return false;
     }
     if (senha.length < 6) {
         msg.textContent = '❌ Senha deve ter pelo menos 6 caracteres';
-        msg.style.color = '#f87171'; return;
+        msg.style.color = '#f87171'; return false;
     }
 
     msg.style.color = '#34d399';
@@ -145,25 +153,25 @@ async function submitCadastro(e) {
     if (error) {
         msg.textContent = '❌ ' + error.message;
         msg.style.color = '#f87171';
-        return;
+        return false;
     }
 
     if (data?.session?.user) {
         msg.textContent = '✅ Conta criada com sucesso! Entrando...';
         msg.style.color = '#10b981';
     } else {
-        msg.textContent = '✅ Conta criada! Agora faça login com seus dados ali em cima. (Se pediu confirmação de email, desligue no Supabase)';
+        msg.textContent = '✅ Conta criada! Agora faça login com seus dados. (Se pediu confirmação de email, desligue no Supabase)';
         msg.style.color = '#10b981';
         document.getElementById('loginEmail').value = email;
         document.getElementById('loginSenha').value = senha;
-        // Automaticamente mostra o login depois de 2 segundos
-        setTimeout(mostrarLogin, 2000);
+        setTimeout(window.mostrarLogin, 2000);
     }
-}
+    return false;
+};
 
-async function fazerLogout() {
+window.fazerLogout = async function fazerLogout() {
     if (supabase) await supabase.auth.signOut();
-}
+};
 
 // ==================== 2. CARREGAR DADOS DA NUVEM ====================
 async function carregarDados() {
