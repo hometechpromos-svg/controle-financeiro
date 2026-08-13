@@ -17,6 +17,9 @@
     -moz-text-size-adjust: 100%;
 }
 
+/* CLASSE GENÉRICA PARA ESCONDER TELAS */
+.oculto { display: none !important; }
+
 /* SVGs NUNCA MAIS VAO QUEBRAR O LAYOUT */
 svg {
     display: block;
@@ -206,6 +209,9 @@ body {
     word-wrap: normal;
     word-break: normal;
     white-space: nowrap;
+    position: relative !important;
+    z-index: 999 !important;
+    isolation: isolate;
 }
 .auth-tab:last-child {
     margin-right: 0;

@@ -17,12 +17,22 @@ let usuarioAtual = null;
 
 // ==================== 1. AUTENTICAÇÃO ====================
 function trocarAuthTab(tipo) {
-    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('ativa'));
-    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('ativa'));
-    document.getElementById('tab' + (tipo === 'login' ? 'Login' : 'Cadastro')).classList.add('ativa');
-    document.getElementById('form' + (tipo === 'login' ? 'Login' : 'Cadastro')).classList.add('ativa');
-    document.getElementById('loginMsg').textContent = '';
-    document.getElementById('cadastroMsg').textContent = '';
+    try {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('ativa'));
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('ativa'));
+        const idTab = tipo === 'login' ? 'tabLogin' : 'tabCadastro';
+        const idForm = tipo === 'login' ? 'formLogin' : 'formCadastro';
+        const elTab = document.getElementById(idTab);
+        const elForm = document.getElementById(idForm);
+        if (elTab) elTab.classList.add('ativa');
+        if (elForm) elForm.classList.add('ativa');
+        const elLoginMsg = document.getElementById('loginMsg');
+        const elCadMsg = document.getElementById('cadastroMsg');
+        if (elLoginMsg) elLoginMsg.textContent = '';
+        if (elCadMsg) elCadMsg.textContent = '';
+    } catch(e) {
+        console.warn('trocarAuthTab erro:', e);
+    }
 }
 
 async function inicializarApp() {
@@ -60,13 +70,21 @@ async function inicializarApp() {
 }
 
 function mostrarAuth() {
-    document.getElementById('telaAuth').style.display = 'flex';
-    document.getElementById('telaApp').style.display = 'none';
+    const telaAuth = document.getElementById('telaAuth');
+    const telaApp = document.getElementById('telaApp');
+    telaAuth.style.display = '';
+    telaAuth.classList.remove('oculto');
+    telaApp.style.display = 'none';
+    telaApp.classList.add('oculto');
 }
 
 function mostrarApp() {
-    document.getElementById('telaAuth').style.display = 'none';
-    document.getElementById('telaApp').style.display = 'block';
+    const telaAuth = document.getElementById('telaAuth');
+    const telaApp = document.getElementById('telaApp');
+    telaAuth.style.display = 'none';
+    telaAuth.classList.add('oculto');
+    telaApp.style.display = '';
+    telaApp.classList.remove('oculto');
     document.getElementById('userEmail').textContent = usuarioAtual?.email || '';
 }
 
@@ -136,7 +154,26 @@ function inicializarUI() {
     document.getElementById('data').valueAsDate = new Date();
     document.getElementById('dataPrevisao').valueAsDate = new Date();
 
-    // Abas
+    // ==================== ABAS DE AUTENTICAÇÃO (FALLBACK OBRIGATÓRIO!)
+    // Clica na aba, não confia no onclick inline do HTML
+    const tabLogin = document.getElementById('tabLogin');
+    const tabCadastro = document.getElementById('tabCadastro');
+    if (tabLogin) {
+        tabLogin.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            trocarAuthTab('login');
+        }, { capture: true, passive: false });
+    }
+    if (tabCadastro) {
+        tabCadastro.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            trocarAuthTab('cadastro');
+        }, { capture: true, passive: false });
+    }
+
+    // Abas do app
     document.querySelectorAll('.aba').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.aba').forEach(b => b.classList.remove('ativa'));
