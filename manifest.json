@@ -1,23 +1,23 @@
 {
   "name": "Controle Financeiro",
   "short_name": "Finanças",
-  "description": "Seu gerenciador financeiro pessoal",
+  "description": "Seu gerenciador financeiro pessoal com sincronização em nuvem",
   "lang": "pt-BR",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#667eea",
-  "theme_color": "#667eea",
+  "background_color": "#0a0e14",
+  "theme_color": "#0b0f14",
   "icons": [
     {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%23667eea'/><text x='50%25' y='50%25' text-anchor='middle' dominant-baseline='central' font-size='260' font-family='Arial' fill='white'>💰</text></svg>",
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%230a0e14'/><stop offset='100%25' stop-color='%23111822'/></linearGradient><linearGradient id='green' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%2310b981'/><stop offset='100%25' stop-color='%2334d399'/></linearGradient></defs><rect width='512' height='512' rx='110' fill='url(%23bg)'/><rect x='110' y='160' width='292' height='192' rx='38' fill='%2310b981' opacity='0.18'/><rect x='126' y='176' width='260' height='160' rx='30' fill='none' stroke='url(%23green)' stroke-width='14'/><circle cx='328' cy='256' r='14' fill='url(%23green)'/><path d='M 162 256 H 242 M 162 286 H 276' stroke='url(%23green)' stroke-width='13' stroke-linecap='round' fill='none'/><path d='M 158 348 L 192 316 L 220 340 L 272 290 L 302 312 L 358 252' stroke='%2334d399' stroke-width='18' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%23667eea'/><text x='50%25' y='50%25' text-anchor='middle' dominant-baseline='central' font-size='260' font-family='Arial' fill='white'>💰</text></svg>",
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='bg2' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%230a0e14'/><stop offset='100%25' stop-color='%23111822'/></linearGradient><linearGradient id='green2' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%2310b981'/><stop offset='100%25' stop-color='%2334d399'/></linearGradient></defs><rect width='512' height='512' rx='110' fill='url(%23bg2)'/><rect x='110' y='160' width='292' height='192' rx='38' fill='%2310b981' opacity='0.18'/><rect x='126' y='176' width='260' height='160' rx='30' fill='none' stroke='url(%23green2)' stroke-width='14'/><circle cx='328' cy='256' r='14' fill='url(%23green2)'/><path d='M 162 256 H 242 M 162 286 H 276' stroke='url(%23green2)' stroke-width='13' stroke-linecap='round' fill='none'/><path d='M 158 348 L 192 316 L 220 340 L 272 290 L 302 312 L 358 252' stroke='%2334d399' stroke-width='18' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"

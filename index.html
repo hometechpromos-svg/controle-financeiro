@@ -3,40 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#0b0f14">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Finanças">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="description" content="Seu gerenciador financeiro pessoal com controle, previsões e investimentos">
+    <meta name="description" content="Seu gerenciador financeiro pessoal com sincronização em nuvem">
+
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23667eea'/><text x='50%25' y='55%25' text-anchor='middle' font-size='52' font-family='Arial'>💰</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23667eea'/><text x='50%25' y='55%25' text-anchor='middle' font-size='52' font-family='Arial'>💰</text></svg>">
+
+    <!-- NOVO ÍCONE FINANCEIRO PRETO+VERDE -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%230b0f14'/><stop offset='100%25' stop-color='%23131822'/></linearGradient></defs><rect width='100' height='100' rx='22' fill='url(%23bg)'/><rect x='18' y='30' width='64' height='40' rx='7' fill='%2310b981' opacity='0.18'/><rect x='22' y='34' width='56' height='32' rx='5' fill='none' stroke='%2310b981' stroke-width='3'/><circle cx='64' cy='50' r='3' fill='%2310b981'/><path d='M 28 50 L 42 50 M 28 56 L 50 56' stroke='%2310b981' stroke-width='3' stroke-linecap='round' fill='none'/><path d='M 30 66 L 38 58 L 44 63 L 54 52 L 60 58 L 70 48' stroke='%2334d399' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='bg2' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%230b0f14'/><stop offset='100%25' stop-color='%23131822'/></linearGradient></defs><rect width='100' height='100' rx='22' fill='url(%23bg2)'/><rect x='18' y='30' width='64' height='40' rx='7' fill='%2310b981' opacity='0.18'/><rect x='22' y='34' width='56' height='32' rx='5' fill='none' stroke='%2310b981' stroke-width='3'/><circle cx='64' cy='50' r='3' fill='%2310b981'/><path d='M 28 50 L 42 50 M 28 56 L 50 56' stroke='%2310b981' stroke-width='3' stroke-linecap='round' fill='none'/><path d='M 30 66 L 38 58 L 44 63 L 54 52 L 60 58 L 70 48' stroke='%2334d399' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
     <title>Controle Financeiro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- ====== TELA DE LOGIN / CADASTRO ====== -->
     <div id="telaAuth" class="tela-auth">
-        <div class="auth-box">
-            <div class="auth-logo">💰</div>
-            <h1 class="auth-titulo">Controle Financeiro</h1>
-            <p class="auth-subtitulo">Sincronize seus dados em todos os dispositivos</p>
+        <div class="auth-glow auth-glow-1"></div>
+        <div class="auth-glow auth-glow-2"></div>
 
-            <div class="auth-tabs">
-                <button class="auth-tab ativa" id="tabLogin" onclick="trocarAuthTab('login')">Entrar</button>
-                <button class="auth-tab" id="tabCadastro" onclick="trocarAuthTab('cadastro')">Criar Conta</button>
+        <div class="auth-box">
+            <!-- NOVO LOGO FINANCEIRO -->
+            <div class="auth-logo-wrap">
+                <div class="auth-logo-svg" aria-hidden="true">
+                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#10b981"/>
+                            <stop offset="100%" stop-color="#34d399"/>
+                        </linearGradient>
+                    </defs>
+                    <rect x="24" y="36" width="72" height="48" rx="10" fill="#10b981" opacity="0.15"/>
+                    <rect x="28" y="40" width="64" height="40" rx="7" fill="none" stroke="url(#cardGrad)" stroke-width="4"/>
+                    <circle cx="75" cy="60" r="4" fill="url(#cardGrad)"/>
+                    <path d="M36 60 H55 M36 68 H62" stroke="url(#cardGrad)" stroke-width="3.5" stroke-linecap="round"/>
+                    <path d="M35 80 L45 70 L52 76 L64 63 L72 70 L85 56" stroke="#34d399" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+            </div>
+
+            <h1 class="auth-titulo">Controle Financeiro</h1>
+            <p class="auth-subtitulo">Sincronize seus gastos em todos os dispositivos</p>
+
+            <div class="auth-tabs" role="tablist">
+                <button class="auth-tab ativa" id="tabLogin" role="tab" onclick="trocarAuthTab('login')">Entrar</button>
+                <button class="auth-tab" id="tabCadastro" role="tab" onclick="trocarAuthTab('cadastro')">Criar Conta</button>
             </div>
 
             <!-- Formulário de LOGIN -->
             <form id="formLogin" class="auth-form ativa">
                 <div class="campo">
                     <label>Email</label>
-                    <input type="email" id="loginEmail" placeholder="voce@email.com" required>
+                    <input type="email" id="loginEmail" placeholder="voce@email.com" autocomplete="email" required>
                 </div>
                 <div class="campo">
                     <label>Senha</label>
-                    <input type="password" id="loginSenha" placeholder="Mínimo 6 caracteres" required>
+                    <input type="password" id="loginSenha" placeholder="Mínimo 6 caracteres" autocomplete="current-password" required>
                 </div>
                 <button type="submit" class="btn-auth">Entrar</button>
                 <p class="auth-msg" id="loginMsg"></p>
@@ -46,15 +71,15 @@
             <form id="formCadastro" class="auth-form">
                 <div class="campo">
                     <label>Email</label>
-                    <input type="email" id="cadastroEmail" placeholder="voce@email.com" required>
+                    <input type="email" id="cadastroEmail" placeholder="voce@email.com" autocomplete="email" required>
                 </div>
                 <div class="campo">
                     <label>Senha</label>
-                    <input type="password" id="cadastroSenha" placeholder="Mínimo 6 caracteres" required>
+                    <input type="password" id="cadastroSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required>
                 </div>
                 <div class="campo">
                     <label>Confirmar Senha</label>
-                    <input type="password" id="cadastroSenha2" placeholder="Repita a senha" required>
+                    <input type="password" id="cadastroSenha2" placeholder="Repita a senha" autocomplete="new-password" required>
                 </div>
                 <button type="submit" class="btn-auth">Criar Conta</button>
                 <p class="auth-msg" id="cadastroMsg"></p>
@@ -62,40 +87,51 @@
         </div>
     </div>
 
-    <!-- ====== TELA PRINCIPAL (só aparece depois de logar) ====== -->
+    <!-- ====== TELA PRINCIPAL ====== -->
     <div id="telaApp" class="tela-app" style="display: none;">
         <div class="container">
             <header>
                 <div class="header-content">
-                    <h1>💰 Controle Financeiro</h1>
-                    <div class="user-menu">
-                        <div class="user-info">
-                            <span class="user-avatar">👤</span>
-                            <span class="user-email" id="userEmail">—</span>
-                        </div>
-                        <button class="btn-logout" onclick="fazerLogout()" title="Sair">🚪</button>
+                    <div class="logo-app">
+                    <svg viewBox="0 0 40 40" class="mini-logo" aria-hidden="true">
+                        <rect x="4" y="10" width="32" height="20" rx="4" fill="#10b981" opacity="0.2"/>
+                        <path d="M8 27 L13 22 L16 25 L22 19 L26 22 L32 16" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    </svg>
+                    <h1>Finanças</h1>
+                </div>
+                <div class="user-menu">
+                    <div class="user-info">
+                        <span class="user-avatar">👤</span>
+                        <span class="user-email" id="userEmail">—</span>
                     </div>
+                    <button type="button" class="btn-logout" onclick="fazerLogout()" title="Sair">🚪</button>
                 </div>
             </header>
 
-            <nav class="abas">
-                <button class="aba ativa" data-aba="controle">📊 Controle</button>
-                <button class="aba" data-aba="previsoes">🔮 Previsões</button>
-                <button class="aba" data-aba="investimentos">📈 Investimentos</button>
+            <nav class="abas" role="tablist">
+                <button type="button" class="aba ativa" role="tab" data-aba="controle">📊 Controle</button>
+                <button type="button" class="aba" role="tab" data-aba="previsoes">🔮 Previsões</button>
+                <button type="button" class="aba" role="tab" data-aba="investimentos">📈 Investimentos</button>
             </nav>
 
-            <section id="aba-controle" class="conteudo-aba ativa">
+            <section id="aba-controle" class="conteudo-aba ativa" role="tabpanel">
                 <section class="resumo">
                     <div class="card saldo">
-                        <span class="label">Saldo Total</span>
+                        <div class="card-label-wrap">
+                            <span class="label">Saldo Total</span>
+                        </div>
                         <span class="valor" id="saldoTotal">R$ 0,00</span>
                     </div>
                     <div class="card entrada">
-                        <span class="label">Entradas</span>
+                        <div class="card-label-wrap">
+                            <span class="label">Entradas</span>
+                        </div>
                         <span class="valor" id="totalEntradas">R$ 0,00</span>
                     </div>
                     <div class="card saida">
-                        <span class="label">Saídas</span>
+                        <div class="card-label-wrap">
+                            <span class="label">Saídas</span>
+                        </div>
                         <span class="valor" id="totalSaidas">R$ 0,00</span>
                     </div>
                 </section>
@@ -153,7 +189,7 @@
                 <section class="transacoes">
                     <div class="transacoes-header">
                         <h2>Transações</h2>
-                        <select id="filtro">
+                        <select id="filtro" aria-label="Filtrar transações">
                             <option value="todas">Todas</option>
                             <option value="entradas">Apenas Entradas</option>
                             <option value="saidas">Apenas Saídas</option>
@@ -166,7 +202,7 @@
                 </section>
             </section>
 
-            <section id="aba-previsoes" class="conteudo-aba">
+            <section id="aba-previsoes" class="conteudo-aba" role="tabpanel">
                 <section class="resumo">
                     <div class="card saldo">
                         <span class="label">Saldo Previsto</span>
@@ -235,7 +271,7 @@
                 <section class="transacoes">
                     <div class="transacoes-header">
                         <h2>Previsões</h2>
-                        <select id="filtroPrevisoes">
+                        <select id="filtroPrevisoes" aria-label="Filtrar previsões">
                             <option value="todas">Todas</option>
                             <option value="entradas">Apenas Entradas</option>
                             <option value="saidas">Apenas Saídas</option>
@@ -248,7 +284,7 @@
                 </section>
             </section>
 
-            <section id="aba-investimentos" class="conteudo-aba">
+            <section id="aba-investimentos" class="conteudo-aba" role="tabpanel">
                 <section class="formulario">
                     <h2>📈 Simulador de Investimento</h2>
                     <form id="formInvestimento" onsubmit="return false;">
@@ -297,7 +333,7 @@
                         </div>
                     </div>
 
-                    <h2 style="margin-top: 25px; margin-bottom: 15px; color: #333;">📅 Evolução Mês a Mês</h2>
+                    <h2 style="margin-top: 25px; margin-bottom: 15px;">📅 Evolução Mês a Mês</h2>
                     <div class="tabela-meses-wrapper">
                         <table class="tabela-meses" id="tabelaMeses">
                             <thead>
@@ -318,11 +354,11 @@
         </div>
     </div>
 
-    <div id="modalEdicao" class="modal-fundo" style="display: none;">
-        <div class="modal">
+    <div id="modalEdicao" class="modal-fundo" style="display: none;" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
             <div class="modal-header">
                 <h2 id="modalTitulo">Editar Transação</h2>
-                <button class="modal-fechar" onclick="fecharModal()">&times;</button>
+                <button type="button" class="modal-fechar" onclick="fecharModal()" aria-label="Fechar">&times;</button>
             </div>
             <form id="formEdicao">
                 <input type="hidden" id="editId">
@@ -376,7 +412,6 @@
         </div>
     </div>
 
-    <!-- CDN SUPABASE (mais estável) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
 </body>
