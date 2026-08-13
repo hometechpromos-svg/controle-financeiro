@@ -16,22 +16,64 @@ let previsoes = [];
 let usuarioAtual = null;
 
 // ==================== 1. AUTENTICAÇÃO ====================
+// FUNÇÃO DE TROCA DE ABAS — MODO FORÇA BRUTA (NÃO FALHA!)
 function trocarAuthTab(tipo) {
     try {
-        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('ativa'));
-        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('ativa'));
-        const idTab = tipo === 'login' ? 'tabLogin' : 'tabCadastro';
-        const idForm = tipo === 'login' ? 'formLogin' : 'formCadastro';
-        const elTab = document.getElementById(idTab);
-        const elForm = document.getElementById(idForm);
-        if (elTab) elTab.classList.add('ativa');
-        if (elForm) elForm.classList.add('ativa');
+        const ehLogin = (tipo === 'login');
+        const idTabAtiva  = ehLogin ? 'tabLogin'    : 'tabCadastro';
+        const idTabInativa = ehLogin ? 'tabCadastro' : 'tabLogin';
+        const idFormAtiva = ehLogin ? 'formLogin'   : 'formCadastro';
+        const idFormInativa = ehLogin ? 'formCadastro' : 'formLogin';
+
+        // ================== 1. ATUALIZA ABAS (força className = NÃO TEM classList bug!)
+        const elTabAtiva = document.getElementById(idTabAtiva);
+        const elTabInativa = document.getElementById(idTabInativa);
+        if (elTabAtiva) {
+            elTabAtiva.className = 'auth-tab ativa';
+            elTabAtiva.removeAttribute('style');
+            elTabAtiva.setAttribute('aria-selected', 'true');
+        }
+        if (elTabInativa) {
+            elTabInativa.className = 'auth-tab';
+            elTabInativa.removeAttribute('style');
+            elTabInativa.setAttribute('aria-selected', 'false');
+        }
+
+        // ================== 2. ATUALIZA FORMULÁRIOS — FORÇA INLINE + CLASSE!
+        const elFormAtivo = document.getElementById(idFormAtiva);
+        const elFormInativo = document.getElementById(idFormInativa);
+        if (elFormAtivo) {
+            elFormAtivo.className = 'auth-form ativa';
+            elFormAtivo.style.display = 'block';
+            elFormAtivo.style.visibility = 'visible';
+            elFormAtivo.style.opacity = '1';
+            elFormAtivo.style.height = 'auto';
+            elFormAtivo.style.overflow = 'visible';
+            elFormAtivo.style.width = '100%';
+        }
+        if (elFormInativo) {
+            elFormInativo.className = 'auth-form';
+            elFormInativo.style.display = 'none';
+            elFormInativo.style.visibility = 'hidden';
+            elFormInativo.style.opacity = '0';
+            elFormInativo.style.height = '0';
+            elFormInativo.style.overflow = 'hidden';
+            elFormInativo.style.width = '100%';
+        }
+
+        // ================== 3. LIMPA MENSAGENS
         const elLoginMsg = document.getElementById('loginMsg');
         const elCadMsg = document.getElementById('cadastroMsg');
-        if (elLoginMsg) elLoginMsg.textContent = '';
-        if (elCadMsg) elCadMsg.textContent = '';
+        if (elLoginMsg) { elLoginMsg.textContent = ''; elLoginMsg.removeAttribute('style'); }
+        if (elCadMsg)   { elCadMsg.textContent = '';   elCadMsg.removeAttribute('style'); }
+
+        // ================== 4. DEBUG (pode ver no console se quiser)
+        console.log('[Auth] Troca de aba efetuada:', tipo,
+            ' | Form ativo visivel:', elFormAtivo ? (elFormAtivo.className + ' / display=' + elFormAtivo.style.display) : 'NULL');
+
     } catch(e) {
-        console.warn('trocarAuthTab erro:', e);
+        console.warn('trocarAuthTab ERRO:', e);
+        alert('Erro ao trocar aba: ' + e.message);
     }
 }
 
