@@ -33,12 +33,12 @@
 
                 <h2 class="auth-sub-titulo" style="margin:0 0 14px 0;font-size:16px;color:#10b981;font-weight:700;text-align:center;">📱 Passo 1 de 2</h2>
 
-                <form id="formTelefone" onsubmit="try{event.preventDefault();event.stopPropagation();}catch(e){} if(window.etapa1_verificarTelefone){window.etapa1_verificarTelefone(event);} return false;">
+                <form id="formTelefone" novalidate>
                     <div class="campo">
                         <label>Telefone / WhatsApp</label>
                         <input type="tel" id="telefoneAcesso" placeholder="(00) 00000-0000" autocomplete="tel" required>
                     </div>
-                    <button type="submit" class="btn-auth" style="background:#16a34a;font-size:16px;font-weight:800;padding:16px 18px;min-height:52px;">➡️ Continuar</button>
+                    <button type="button" id="btnContinuarTelefone" class="btn-auth" onclick="try{window.etapa1_verificarTelefone();}catch(e){alert('ERRO NO CLIQUE: '+e.message);}return false;" style="background:#16a34a;font-size:16px;font-weight:800;padding:16px 18px;min-height:52px;touch-action:manipulation;cursor:pointer;">➡️ Continuar</button>
                     <p class="auth-msg" id="msgTelefone"></p>
                 </form>
 
@@ -68,12 +68,12 @@
                 <div id="blocoSenhaLogin">
                     <h2 class="auth-sub-titulo" style="margin:0 0 14px 0;font-size:16px;color:#10b981;font-weight:700;text-align:center;">🔑 Digite sua senha</h2>
 
-                    <form id="formSenhaLogin" onsubmit="try{event.preventDefault();event.stopPropagation();}catch(e){} if(window.etapa2_loginSenha){window.etapa2_loginSenha(event);} return false;">
+                    <form id="formSenhaLogin" novalidate>
                         <div class="campo">
                             <label>Senha</label>
                             <input type="password" id="senhaLogin" placeholder="Mínimo 6 caracteres" autocomplete="current-password" minlength="6" required>
                         </div>
-                        <button type="submit" class="btn-auth" style="background:#16a34a;font-size:16px;font-weight:800;padding:16px 18px;min-height:52px;">🚀 Entrar</button>
+                        <button type="button" id="btnEntrarSenha" class="btn-auth" onclick="try{window.etapa2_loginSenha();}catch(e){alert('ERRO NO CLIQUE: '+e.message);}return false;" style="background:#16a34a;font-size:16px;font-weight:800;padding:16px 18px;min-height:52px;touch-action:manipulation;cursor:pointer;">🚀 Entrar</button>
                         <p class="auth-msg" id="msgSenhaLogin"></p>
                     </form>
                 </div>
@@ -83,7 +83,7 @@
                     <h2 class="auth-sub-titulo" style="margin:0 0 14px 0;font-size:16px;color:#10b981;font-weight:700;text-align:center;">✨ Cadastre sua senha</h2>
                     <p style="text-align:center;color:#94a3b8;font-size:13px;margin:0 0 16px 0;">É a primeira vez com esse telefone. Crie uma senha para continuar:</p>
 
-                    <form id="formSenhaCadastro" onsubmit="try{event.preventDefault();event.stopPropagation();}catch(e){} if(window.etapa2_cadastrarSenha){window.etapa2_cadastrarSenha(event);} return false;">
+                    <form id="formSenhaCadastro" novalidate>
                         <div class="campo">
                             <label>Criar senha</label>
                             <input type="password" id="senhaNova1" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6" required>
@@ -92,7 +92,7 @@
                             <label>Repetir senha</label>
                             <input type="password" id="senhaNova2" placeholder="Repita a mesma senha" autocomplete="new-password" minlength="6" required>
                         </div>
-                        <button type="submit" class="btn-auth" style="background:#16a34a;font-size:16px;font-weight:800;padding:16px 18px;min-height:52px;">✅ Criar minha conta</button>
+                        <button type="button" id="btnCriarConta" class="btn-auth" onclick="try{window.etapa2_cadastrarSenha();}catch(e){alert('ERRO NO CLIQUE: '+e.message);}return false;" style="background:#16a34a;font-size:16px;font-weight:800;padding:16px 18px;min-height:52px;touch-action:manipulation;cursor:pointer;">✅ Criar minha conta</button>
                         <p class="auth-msg" id="msgSenhaCadastro"></p>
                     </form>
                 </div>
