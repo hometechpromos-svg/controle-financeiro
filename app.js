@@ -1,255 +1,176 @@
+// 🔴 =============== TRATA QUALQUER ERRO DE JAVASCRIPT NA PÁGINA ===============
+// 👉 Se qualquer coisa der errado no JS, aparecera um ALERT com o erro exato!
+window.onerror = function(message, source, lineno, colno, error) {
+    try {
+        alert(
+            '❌ ERRO NO JAVASCRIPT:\n\n' +
+            'Mensagem: ' + message + '\n' +
+            'Linha: ' + lineno + ' | Coluna: ' + colno + '\n\n' +
+            'Por favor: tire um print dessa tela e me envie.\n\n' +
+            'Dica: provavelmente eh o Supabase que nao foi configurado ainda.'
+        );
+    } catch(e) {}
+    console.error('ERRO JS:', message, source, lineno, colno, error);
+};
+window.addEventListener('unhandledrejection', function(promiseErr) {
+    try {
+        alert('❌ ERRO ASSINCRONO (Promise):\n\n' + (promiseErr.reason?.message || promiseErr.reason || promiseErr));
+    } catch(e){}
+});
+
 // ==================== CONFIGURAÇÕES SUPABASE ====================
 const SUPABASE_URL = "https://wcoxenaodhqnugrbmflk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_aqgSyFe4DNHLDepj03BAvQ_f9GzjNDL";
-let supabase;
-try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true }
-    });
-} catch(e) {
-    console.error("Erro ao iniciar Supabase:", e);
-}
 
 // ==================== DADOS EM MEMÓRIA ====================
 let transacoes = [];
 let previsoes = [];
 let usuarioAtual = null;
+let supabase = null; // inicializado depois no DOMContentLoaded
 
 // ==================== 1. AUTENTICAÇÃO ====================
-// TROCA DE ABAS — 100% INLINE, NÃO PASSA POR NENHUMA FUNÇÃO PARA NÃO FALHAR!
-function trocarAuthTab(tipo) {
-    try {
-        const ehLogin = (tipo === 'login');
 
-        // ============== GET ELEMENTOS DIRETOS ==============
-        const tabLogin     = document.getElementById('tabLogin');
-        const tabCadastro  = document.getElementById('tabCadastro');
-        const formLogin    = document.getElementById('formLogin');
-        const formCadastro = document.getElementById('formCadastro');
-
-        if (!tabLogin || !tabCadastro || !formLogin || !formCadastro) {
-            alert('❌ ERRO CRÍTICO: Elementos da tela de login não encontrados! Recarregue a página.');
-            return;
-        }
-
-        // ============== 1º PASSO: SEMPRE ESCONDE OS DOIS FORMULÁRIOS PRIMEIRO ==============
-        // Assim não tem lógica de quem é quem, garante estado limpo.
-        formLogin.hidden = true;
-        formLogin.setAttribute('hidden', '');
-        formLogin.style.setProperty('display', 'none', 'important');
-        formLogin.style.setProperty('visibility', 'hidden', 'important');
-        formLogin.style.setProperty('opacity', '0', 'important');
-        formLogin.style.setProperty('height', '0', 'important');
-        formLogin.style.setProperty('overflow', 'hidden', 'important');
-        formLogin.className = 'auth-form';
-
-        formCadastro.hidden = true;
-        formCadastro.setAttribute('hidden', '');
-        formCadastro.style.setProperty('display', 'none', 'important');
-        formCadastro.style.setProperty('visibility', 'hidden', 'important');
-        formCadastro.style.setProperty('opacity', '0', 'important');
-        formCadastro.style.setProperty('height', '0', 'important');
-        formCadastro.style.setProperty('overflow', 'hidden', 'important');
-        formCadastro.className = 'auth-form';
-
-        // ============== 2º PASSO: ABAS (sempre remove ativa primeiro) ==============
-        tabLogin.className    = 'auth-tab';
-        tabCadastro.className = 'auth-tab';
-        tabLogin.style.removeProperty('background-color');
-        tabCadastro.style.removeProperty('background-color');
-
-        // ============== 3º PASSO: MOSTRA SOMENTE O QUE PEDIRAM ==============
-        if (ehLogin) {
-            tabLogin.className = 'auth-tab ativa';
-            formLogin.hidden = false;
-            formLogin.removeAttribute('hidden');
-            formLogin.style.setProperty('display', 'block', 'important');
-            formLogin.style.setProperty('visibility', 'visible', 'important');
-            formLogin.style.setProperty('opacity', '1', 'important');
-            formLogin.style.setProperty('height', 'auto', 'important');
-            formLogin.style.setProperty('overflow', 'visible', 'important');
-            formLogin.className = 'auth-form ativa';
-        } else {
-            tabCadastro.className = 'auth-tab ativa';
-            formCadastro.hidden = false;
-            formCadastro.removeAttribute('hidden');
-            formCadastro.style.setProperty('display', 'block', 'important');
-            formCadastro.style.setProperty('visibility', 'visible', 'important');
-            formCadastro.style.setProperty('opacity', '1', 'important');
-            formCadastro.style.setProperty('height', 'auto', 'important');
-            formCadastro.style.setProperty('overflow', 'visible', 'important');
-            formCadastro.className = 'auth-form ativa';
-        }
-
-        // ============== 4º: Limpa mensagens ==============
-        const mLogin = document.getElementById('loginMsg');
-        const mCad  = document.getElementById('cadastroMsg');
-        if (mLogin) { mLogin.textContent = ''; mLogin.removeAttribute('style'); }
-        if (mCad)   { mCad.textContent = '';   mCad.removeAttribute('style'); }
-
-        console.log('[OK] Trocou para aba:', tipo);
-
-    } catch(e) {
-        console.warn('trocarAuthTab ERRO:', e);
-        alert('❌ Erro ao trocar aba: ' + e.message);
-    }
-}
-
-// ==================== CRIAR CONTA ADMIN (PRÉ-DEFINIDA — 1 clique)
-async function criarContaAdmin() {
-    const btn = document.getElementById('btnCriarAdmin');
-    if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = '⏳ Criando conta admin...'; }
-    const msg = document.getElementById('loginMsg');
-    msg.textContent = '✨ Criando conta admin...';
-    msg.style.color = '#34d399';
-
-    const { data, error } = await supabase.auth.signUp({
-        email: 'admin@financas.app',
-        password: 'admin123',
-        options: { data: { nome: 'Admin Finanças', telefone: '(11) 99999-9999', admin: true } }
-    });
-
-    if (error) {
-        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = '🚀 Criar minha conta Admin agora'; }
-        if (error.message.includes('already') || error.message.includes('usuário') || error.message.includes('User')) {
-            msg.textContent = '✅ Conta admin JÁ EXISTE! Use → admin@financas.app / admin123 para entrar.';
-            msg.style.color = '#10b981';
-            // Pré-preenche os campos
-            document.getElementById('loginEmail').value = 'admin@financas.app';
-            document.getElementById('loginSenha').value = 'admin123';
-        } else {
-            msg.textContent = '❌ Erro: ' + error.message;
-            msg.style.color = '#f87171';
-        }
-        return;
-    }
-
-    // Sucesso
-    if (data?.session?.user) {
-        msg.textContent = '✅ Conta admin criada! Entrando automaticamente...';
-        msg.style.color = '#10b981';
-    } else {
-        msg.textContent = '✅ Conta admin criada! Agora faça login: email=admin@financas.app / senha=admin123';
-        msg.style.color = '#10b981';
-        document.getElementById('loginEmail').value = 'admin@financas.app';
-        document.getElementById('loginSenha').value = 'admin123';
-        if (btn) {
-            btn.textContent = '✅ Conta admin pronta! Já pode entrar.';
-            btn.style.opacity = '1';
-            btn.style.backgroundColor = '#052e1c';
-            btn.disabled = true;
-        }
-    }
-}
-
-async function inicializarApp() {
-    // Service Worker (PWA)
-    if ('serviceWorker' in navigator) {
-        try { await navigator.serviceWorker.register('service-worker.js'); }
-        catch(e) { console.warn('SW não carregou:', e); }
-    }
-
-    // Verifica sessão
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-        usuarioAtual = session.user;
-        mostrarApp();
-        await carregarDados();
-    } else {
-        mostrarAuth();
-    }
-
-    // Listener para mudanças de login/logout
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-            usuarioAtual = session.user;
-            mostrarApp();
-            await carregarDados();
-        } else if (event === 'SIGNED_OUT') {
-            usuarioAtual = null;
-            transacoes = [];
-            previsoes = [];
-            mostrarAuth();
-        }
-    });
-
-    inicializarUI();
-}
-
+// 👉 MOSTRA A TELA DE LOGIN (esconde app)
 function mostrarAuth() {
     const telaAuth = document.getElementById('telaAuth');
     const telaApp = document.getElementById('telaApp');
+    if (!telaAuth || !telaApp) return;
     telaAuth.style.display = '';
     telaAuth.classList.remove('oculto');
     telaApp.style.display = 'none';
     telaApp.classList.add('oculto');
 }
 
+// 👉 MOSTRA A TELA DO APP (esconde login)
 function mostrarApp() {
     const telaAuth = document.getElementById('telaAuth');
     const telaApp = document.getElementById('telaApp');
+    if (!telaAuth || !telaApp) return;
     telaAuth.style.display = 'none';
     telaAuth.classList.add('oculto');
     telaApp.style.display = '';
     telaApp.classList.remove('oculto');
-    document.getElementById('userEmail').textContent = usuarioAtual?.email || '';
+    const elUser = document.getElementById('userEmail');
+    if (elUser) elUser.textContent = usuarioAtual?.email || '';
 }
 
-document.getElementById('formLogin').addEventListener('submit', async (e) => {
+// 👉 BOTÃO ADMIN: Tenta LOGAR primeiro, se não existir a conta, CRIA e depois LOGA.
+async function criarOuEntrarAdmin() {
+    if (!supabase) return alert('❌ Supabase não iniciou ainda. Recarregue a página!');
+
+    const ADMIN_EMAIL = 'admin@financas.app';
+    const ADMIN_SENHA = 'admin123';
+    const ADMIN_NOME = 'Admin Finanças';
+    const ADMIN_TEL = '(11) 99999-9999';
+
+    const btn = document.getElementById('btnEntrarAdmin');
+    const msg = document.getElementById('loginMsg');
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.65'; btn.textContent = '⏳ Processando...'; }
+    if (msg) { msg.textContent = '🔐 Verificando conta admin...'; msg.style.color = '#34d399'; }
+
+    // ===== PASSO 1: Tenta LOGAR (se a conta já existir) =====
+    let rLogin = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password: ADMIN_SENHA });
+    if (!rLogin.error && rLogin.data?.session?.user) {
+        if (msg) msg.textContent = '✅ Logado com sucesso! Entrando...';
+        // usuarioAtual e mostrarApp são tratados no onAuthStateChange
+        if (btn) { btn.textContent = '✅ Logado!'; btn.style.backgroundColor = '#052e1c'; }
+        return;
+    }
+
+    // ===== PASSO 2: Se deu erro no login (conta não existe, etc), TENTA CRIAR =====
+    if (msg) msg.textContent = '✨ Conta não existe. Criando conta admin...';
+    const rCad = await supabase.auth.signUp({
+        email: ADMIN_EMAIL,
+        password: ADMIN_SENHA,
+        options: {
+            data: { nome: ADMIN_NOME, telefone: ADMIN_TEL, admin: true }
+        }
+    });
+
+    if (rCad.error) {
+        if (msg) {
+            msg.textContent = '❌ Erro: ' + (rCad.error.message || String(rCad.error));
+            msg.style.color = '#f87171';
+        }
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = '🚀 Entrar / Criar Conta Admin'; }
+        alert('❌ Erro ao criar conta admin:\n' + rCad.error.message + '\n\nVerifique se voce desligou a confirmacao de email no Supabase!');
+        return;
+    }
+
+    // ===== PASSO 3: CRIADA COM SUCESSO =====
+    // Se o Supabase já logou automaticamente, onAuthStateChange cuida.
+    // Se não (confirmação de email LIGADA), avisa:
+    if (rCad.data?.session?.user) {
+        if (msg) { msg.textContent = '✅ Conta admin criada e logada! Entrando...'; msg.style.color = '#10b981'; }
+        if (btn) { btn.textContent = '✅ Entrou!'; btn.disabled = true; btn.style.backgroundColor = '#052e1c'; }
+    } else {
+        if (msg) {
+            msg.textContent = '⚠️ Conta admin criada, mas precisa confirmar email!\n'
+                + '👉 Va no Supabase, desligue "Confirm email" e clique de novo no botao.';
+            msg.style.color = '#f59e0b';
+        }
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = '🚀 Entrar / Criar Conta Admin'; }
+        alert('⚠️ Conta admin criada, mas a CONFIRMACAO DE EMAIL ESTA LIGADA no Supabase.\n\n'
+            + 'Para funcionar, va no Supabase Dashboard:\n'
+            + 'Authentication → Providers → Email → DESMARQUE "Confirm email" → Salve.\n\n'
+            + 'Depois, clique de novo no botao admin.');
+    }
+}
+
+// 👉 Submit do formLogin
+async function submitLogin(e) {
     e.preventDefault();
+    if (!supabase) return alert('❌ Supabase não iniciou. Recarregue a página.');
     const email = document.getElementById('loginEmail').value.trim();
     const senha = document.getElementById('loginSenha').value;
     const msg = document.getElementById('loginMsg');
+    if (!email || !senha) return;
     msg.textContent = '🔐 Entrando...';
     msg.style.color = '#34d399';
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
-    if (error) { msg.textContent = '❌ ' + error.message; msg.style.color = '#f87171'; }
-    else msg.textContent = '';
-});
+    if (error) {
+        msg.textContent = '❌ ' + error.message;
+        msg.style.color = '#f87171';
+    } else {
+        msg.textContent = '';
+    }
+}
 
-document.getElementById('formCadastro').addEventListener('submit', async (e) => {
+// 👉 Submit do formCadastro
+async function submitCadastro(e) {
     e.preventDefault();
+    if (!supabase) return alert('❌ Supabase não iniciou. Recarregue a página.');
     const nome     = document.getElementById('cadastroNome').value.trim();
     const telefone = document.getElementById('cadastroTelefone').value.trim();
     const email    = document.getElementById('cadastroEmail').value.trim();
     const senha    = document.getElementById('cadastroSenha').value;
     const msg      = document.getElementById('cadastroMsg');
 
-    // ===== Validações básicas =====
+    // Validações
     if (nome.length < 3) {
         msg.textContent = '❌ Preencha seu nome (mínimo 3 letras)';
-        msg.style.color = '#f87171';
-        return;
+        msg.style.color = '#f87171'; return;
     }
     if (telefone.length < 10) {
         msg.textContent = '❌ Preencha seu telefone completo (com DDD)';
-        msg.style.color = '#f87171';
-        return;
+        msg.style.color = '#f87171'; return;
     }
     if (!email.includes('@') || !email.includes('.')) {
         msg.textContent = '❌ Digite um email válido';
-        msg.style.color = '#f87171';
-        return;
+        msg.style.color = '#f87171'; return;
     }
     if (senha.length < 6) {
         msg.textContent = '❌ Senha deve ter pelo menos 6 caracteres';
-        msg.style.color = '#f87171';
-        return;
+        msg.style.color = '#f87171'; return;
     }
 
     msg.style.color = '#34d399';
-    msg.textContent = '✨ Criando sua conta...';
+    msg.textContent = '✨ Criando sua conta nova...';
 
-    // ===== Cria o usuário no Supabase (salva NOME + TELEFONE nos metadata!) =====
     const { data, error } = await supabase.auth.signUp({
         email,
         password: senha,
-        options: {
-            data: {
-                nome: nome,
-                telefone: telefone
-            }
-        }
+        options: { data: { nome, telefone } }
     });
 
     if (error) {
@@ -258,39 +179,46 @@ document.getElementById('formCadastro').addEventListener('submit', async (e) => 
         return;
     }
 
-    // Conta criada com sucesso!
     if (data?.session?.user) {
-        // Se o usuário já logou automaticamente (confirmação de email desligada)
-        msg.textContent = '✅ Conta criada! Entrando...';
+        msg.textContent = '✅ Conta criada com sucesso! Entrando...';
         msg.style.color = '#10b981';
+        // onAuthStateChange cuida de mostrarApp e carregarDados
     } else {
-        msg.textContent = '✅ Conta criada! Verifique seu email para confirmar (ou já pode entrar se a confirmação estiver desativada no Supabase)';
+        msg.textContent = '✅ Conta criada! Agora faça login com seus dados ali em cima. (Se pediu confirmação de email, desligue no Supabase)';
         msg.style.color = '#10b981';
-        setTimeout(() => trocarAuthTab('login'), 2500); // ← automaticamente VOLTA PRO LOGIN DEPOIS DE CRIAR!
+        // Pré-preenche os campos para o usuário já logar
+        document.getElementById('loginEmail').value = email;
+        document.getElementById('loginSenha').value = senha;
     }
-});
+}
 
 async function fazerLogout() {
-    await supabase.auth.signOut();
+    if (supabase) await supabase.auth.signOut();
 }
 
 // ==================== 2. CARREGAR DADOS DA NUVEM ====================
 async function carregarDados() {
-    if (!usuarioAtual) return;
+    if (!usuarioAtual || !supabase) return;
 
-    // Carrega transações
-    const { data: tData, error: tErr } = await supabase
-        .from('transacoes')
-        .select('*')
-        .order('data', { ascending: false });
-    if (!tErr) transacoes = tData || [];
+    try {
+        // Carrega transações
+        const { data: tData, error: tErr } = await supabase
+            .from('transacoes')
+            .select('*')
+            .order('data', { ascending: false });
+        if (!tErr) transacoes = tData || [];
+        else console.warn('Erro carregar transacoes:', tErr);
 
-    // Carrega previsões
-    const { data: pData, error: pErr } = await supabase
-        .from('previsoes')
-        .select('*')
-        .order('data', { ascending: false });
-    if (!pErr) previsoes = pData || [];
+        // Carrega previsões
+        const { data: pData, error: pErr } = await supabase
+            .from('previsoes')
+            .select('*')
+            .order('data', { ascending: false });
+        if (!pErr) previsoes = pData || [];
+        else console.warn('Erro carregar previsoes:', pErr);
+    } catch(e) {
+        console.warn('carregarDados excecao:', e);
+    }
 
     atualizarUI();
 }
@@ -303,53 +231,46 @@ function nextId(array) {
 
 // ==================== 3. UI ====================
 function inicializarUI() {
-    document.getElementById('data').valueAsDate = new Date();
-    document.getElementById('dataPrevisao').valueAsDate = new Date();
+    try { document.getElementById('data').valueAsDate = new Date(); } catch(e){}
+    try { document.getElementById('dataPrevisao').valueAsDate = new Date(); } catch(e){}
 
-    // ==================== ABAS DE AUTENTICAÇÃO — ATRELAMENTO DIRETO!
-    // Faz o BOTÃO CHAMAR A FUNÇÃO. Zero intermediários.
-    const tabLogin = document.getElementById('tabLogin');
-    const tabCadastro = document.getElementById('tabCadastro');
-    const btnAdmin = document.getElementById('btnCriarAdmin');
+    // ====== Forms de Login / Cadastro / Admin ======
+    const fLogin = document.getElementById('formLogin');
+    if (fLogin) fLogin.addEventListener('submit', submitLogin);
 
-    if (tabLogin) {
-        tabLogin.onclick = function() {
-            try { trocarAuthTab('login'); } catch(e){ alert('Erro login: '+e.message); }
-            return false;
-        };
-    }
-    if (tabCadastro) {
-        tabCadastro.onclick = function() {
-            try { trocarAuthTab('cadastro'); } catch(e){ alert('Erro cadastro: '+e.message); }
-            return false;
-        };
-    }
-    if (btnAdmin) {
-        btnAdmin.onclick = function() {
-            try { criarContaAdmin(); } catch(e){ alert('Erro criar admin: '+e.message); }
-            return false;
-        };
-    }
+    const fCad = document.getElementById('formCadastro');
+    if (fCad) fCad.addEventListener('submit', submitCadastro);
 
-    // Abas do app
+    const btnAdmin = document.getElementById('btnEntrarAdmin');
+    if (btnAdmin) btnAdmin.addEventListener('click', criarOuEntrarAdmin);
+
+    // Abas do app (Transações / Previsões / Investimentos)
     document.querySelectorAll('.aba').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.aba').forEach(b => b.classList.remove('ativa'));
             document.querySelectorAll('.conteudo-aba').forEach(c => c.classList.remove('ativa'));
             btn.classList.add('ativa');
-            document.getElementById('aba-' + btn.dataset.aba).classList.add('ativa');
+            try {
+                document.getElementById('aba-' + btn.dataset.aba).classList.add('ativa');
+            } catch(e) {}
         });
     });
 
     // Filtros
-    document.getElementById('filtro').addEventListener('change', renderTransacoes);
-    document.getElementById('filtroPrevisoes').addEventListener('change', renderPrevisoes);
+    const filtro = document.getElementById('filtro');
+    if (filtro) filtro.addEventListener('change', renderTransacoes);
+    const filtroPrev = document.getElementById('filtroPrevisoes');
+    if (filtroPrev) filtroPrev.addEventListener('change', renderPrevisoes);
 
-    // Formulários
-    document.getElementById('formTransacao').addEventListener('submit', adicionarTransacao);
-    document.getElementById('formPrevisao').addEventListener('submit', adicionarPrevisao);
-    document.getElementById('formEdicao').addEventListener('submit', salvarEdicao);
-    document.getElementById('btnSimular').addEventListener('click', simularInvestimento);
+    // Formulários do app
+    const formT = document.getElementById('formTransacao');
+    if (formT) formT.addEventListener('submit', adicionarTransacao);
+    const formP = document.getElementById('formPrevisao');
+    if (formP) formP.addEventListener('submit', adicionarPrevisao);
+    const formE = document.getElementById('formEdicao');
+    if (formE) formE.addEventListener('submit', salvarEdicao);
+    const btnSim = document.getElementById('btnSimular');
+    if (btnSim) btnSim.addEventListener('click', simularInvestimento);
 }
 
 function formatarMoeda(v) {
@@ -366,15 +287,15 @@ function atualizarUI() {
 function atualizarResumo() {
     const entradas = transacoes.filter(t => t.tipo === 'entrada').reduce((s, t) => s + Number(t.valor), 0);
     const saidas = transacoes.filter(t => t.tipo === 'saida').reduce((s, t) => s + Number(t.valor), 0);
-    document.getElementById('totalEntradas').textContent = formatarMoeda(entradas);
-    document.getElementById('totalSaidas').textContent = formatarMoeda(saidas);
-    document.getElementById('saldoTotal').textContent = formatarMoeda(entradas - saidas);
+    try { document.getElementById('totalEntradas').textContent = formatarMoeda(entradas); } catch(e){}
+    try { document.getElementById('totalSaidas').textContent = formatarMoeda(saidas); } catch(e){}
+    try { document.getElementById('saldoTotal').textContent = formatarMoeda(entradas - saidas); } catch(e){}
 
     const eP = previsoes.filter(t => t.tipo === 'entrada').reduce((s, t) => s + Number(t.valor), 0);
     const sP = previsoes.filter(t => t.tipo === 'saida').reduce((s, t) => s + Number(t.valor), 0);
-    document.getElementById('totalEntradasPrevistas').textContent = formatarMoeda(eP);
-    document.getElementById('totalSaidasPrevistas').textContent = formatarMoeda(sP);
-    document.getElementById('saldoPrevisto').textContent = formatarMoeda(eP - sP);
+    try { document.getElementById('totalEntradasPrevistas').textContent = formatarMoeda(eP); } catch(e){}
+    try { document.getElementById('totalSaidasPrevistas').textContent = formatarMoeda(sP); } catch(e){}
+    try { document.getElementById('saldoPrevisto').textContent = formatarMoeda(eP - sP); } catch(e){}
 }
 
 // ==================== 4. TRANSAÇÕES ====================
@@ -405,8 +326,9 @@ async function adicionarTransacao(e) {
 }
 
 function renderTransacoes() {
-    const filtro = document.getElementById('filtro').value;
+    const filtroEl = document.getElementById('filtro');
     let lista = transacoes.slice();
+    let filtro = filtroEl?.value || 'todas';
 
     if (filtro === 'entradas') lista = lista.filter(t => t.tipo === 'entrada');
     else if (filtro === 'saidas') lista = lista.filter(t => t.tipo === 'saida');
@@ -414,6 +336,7 @@ function renderTransacoes() {
     else if (filtro === 'variaveis') lista = lista.filter(t => t.categoria === 'variavel');
 
     const ul = document.getElementById('listaTransacoes');
+    if (!ul) return;
     ul.innerHTML = lista.length === 0
         ? '<li class="vazio">Nenhuma transação cadastrada</li>'
         : lista.map(itemHtml).join('');
@@ -478,8 +401,9 @@ async function adicionarPrevisao(e) {
 }
 
 function renderPrevisoes() {
-    const filtro = document.getElementById('filtroPrevisoes').value;
+    const filtroEl = document.getElementById('filtroPrevisoes');
     let lista = previsoes.slice();
+    let filtro = filtroEl?.value || 'todas';
 
     if (filtro === 'entradas') lista = lista.filter(t => t.tipo === 'entrada');
     else if (filtro === 'saidas') lista = lista.filter(t => t.tipo === 'saida');
@@ -487,6 +411,7 @@ function renderPrevisoes() {
     else if (filtro === 'variaveis') lista = lista.filter(t => t.categoria === 'variavel');
 
     const ul = document.getElementById('listaPrevisoes');
+    if (!ul) return;
     ul.innerHTML = lista.length === 0
         ? '<li class="vazio">Nenhuma previsão cadastrada</li>'
         : lista.map(itemHtml).join('');
@@ -504,8 +429,14 @@ function abrirEdicao(id, origem) {
     document.getElementById('editDescricao').value = item.descricao;
     document.getElementById('editValor').value = item.valor;
     document.getElementById('editData').value = item.data;
-    document.getElementById('editTipo' + (item.tipo === 'entrada' ? 'Entrada' : 'Saida')).checked = true;
-    document.getElementById('editCategoria' + (item.categoria === 'fixo' ? 'Fixo' : 'Variavel')).checked = true;
+    const tipoEnt = document.getElementById('editTipoEntrada');
+    const tipoSai = document.getElementById('editTipoSaida');
+    if (item.tipo === 'entrada' && tipoEnt) tipoEnt.checked = true;
+    if (item.tipo === 'saida' && tipoSai) tipoSai.checked = true;
+    const catFixo = document.getElementById('editCategoriaFixo');
+    const catVar = document.getElementById('editCategoriaVariavel');
+    if (item.categoria === 'fixo' && catFixo) catFixo.checked = true;
+    if (item.categoria === 'variavel' && catVar) catVar.checked = true;
 
     document.getElementById('modalEdicao').style.display = 'flex';
 }
@@ -541,9 +472,11 @@ async function salvarEdicao(e) {
     renderPrevisoes();
 }
 
-document.querySelector('.modal-fundo').addEventListener('click', (e) => {
-    if (e.target.classList.contains('modal-fundo')) fecharModal();
-});
+try {
+    document.querySelector('.modal-fundo').addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-fundo')) fecharModal();
+    });
+} catch(e) {}
 
 // ==================== 7. INVESTIMENTOS ====================
 function simularInvestimento() {
@@ -557,6 +490,7 @@ function simularInvestimento() {
     const taxaReal = taxaCdiMensal * (percCdi / 100);
 
     const tbody = document.querySelector('#tabelaMeses tbody');
+    if (!tbody) return;
     tbody.innerHTML = '';
     let saldo = inicial;
     let totalInvestido = inicial;
@@ -576,10 +510,10 @@ function simularInvestimento() {
         </tr>`;
     }
 
-    document.getElementById('valorFinal').textContent = formatarMoeda(saldo);
-    document.getElementById('totalInvestido').textContent = formatarMoeda(totalInvestido);
-    document.getElementById('totalRendimento').textContent = formatarMoeda(saldo - totalInvestido);
-    document.getElementById('resultadoInvestimento').style.display = 'block';
+    try { document.getElementById('valorFinal').textContent = formatarMoeda(saldo); } catch(e){}
+    try { document.getElementById('totalInvestido').textContent = formatarMoeda(totalInvestido); } catch(e){}
+    try { document.getElementById('totalRendimento').textContent = formatarMoeda(saldo - totalInvestido); } catch(e){}
+    try { document.getElementById('resultadoInvestimento').style.display = 'block'; } catch(e){}
 }
 
 // ==================== UTILS ====================
@@ -589,5 +523,86 @@ function escape(s) {
     ));
 }
 
+// =============================================
+// 👉 START DO APP — SÓ EXECUTA DEPOIS QUE O DOM E SUPABASE ESTIVEREM PRONTOS
+// =============================================
+async function inicializarApp() {
+    try {
+        console.log('▶️ inicializarApp() executando...');
+
+        // ====== 1. VERIFICA SUPABASE CDN ======
+        if (!window.supabase || !window.supabase.createClient) {
+            alert(
+                '❌ ERRO: Biblioteca Supabase não foi carregada!\n\n'
+                + 'Possiveis causas:\n'
+                + '1) Voce esta sem internet\n'
+                + '2) O CDN do Supabase (cdn.jsdelivr.net) esta bloqueado na sua rede\n\n'
+                + 'Recarregue a pagina (F5) ou tente em outra rede.'
+            );
+            return;
+        }
+
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: { persistSession: true, autoRefreshToken: true }
+        });
+        console.log('✅ Supabase cliente criado.');
+
+        // ====== 2. Service Worker (PWA) ======
+        if ('serviceWorker' in navigator) {
+            try { await navigator.serviceWorker.register('service-worker.js'); }
+            catch(e) { console.warn('SW não carregou:', e); }
+        }
+
+        // ====== 3. Inicializa UI primeiro (para binds de formulários) ======
+        inicializarUI();
+        console.log('✅ UI inicializada.');
+
+        // ====== 4. Verifica sessão ======
+        let sessaoExiste = false;
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                usuarioAtual = session.user;
+                mostrarApp();
+                sessaoExiste = true;
+                await carregarDados();
+            } else {
+                mostrarAuth();
+            }
+        } catch (eSession) {
+            console.warn('getSession erro:', eSession);
+            mostrarAuth();
+        }
+
+        // ====== 5. Listener para mudanças de login/logout ======
+        try {
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                console.log('🔄 Supabase auth evento:', event, '| usuario:', session?.user?.email || null);
+                if (event === 'SIGNED_IN' && session?.user) {
+                    usuarioAtual = session.user;
+                    mostrarApp();
+                    await carregarDados();
+                } else if (event === 'SIGNED_OUT') {
+                    usuarioAtual = null;
+                    transacoes = [];
+                    previsoes = [];
+                    mostrarAuth();
+                }
+            });
+        } catch (eListen) {
+            console.warn('onAuthStateChange erro:', eListen);
+        }
+
+        console.log('✅ inicializarApp() finalizado. | sessao:', sessaoExiste);
+    } catch (eGeral) {
+        alert(
+            '❌ ERRO GERAL NO inicializarApp:\n\n'
+            + (eGeral?.message || String(eGeral)) + '\n\n'
+            + 'Recarregue a pagina. Se persistir, me mande print desse erro!'
+        );
+        console.error('inicializarApp geral:', eGeral);
+    }
+}
+
 // Start
-inicializarApp();
+document.addEventListener('DOMContentLoaded', inicializarApp);

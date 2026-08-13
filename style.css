@@ -225,31 +225,22 @@ body {
 }
 .auth-tab:active { transform: scale(0.97); }
 
-/* FORMULÁRIOS AUTH — TROCA DE ABA INFALÍVEL */
-.auth-form {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    height: 0;
-    overflow: hidden;
-}
-.auth-form.ativa,
-#formLogin.ativa,
-#formCadastro.ativa {
+/* =====================================================
+   👉 FORMULÁRIOS AUTH (AGORA SEM ABAS! Mostra LOGIN e CADASTRO juntos.)
+   ===================================================== */
+/* REMOVIDO: .auth-form com display:none / .ativa - agora os dois formulários aparecem juntos de uma vez! */
+.auth-form-wrapper form { width: 100%; }
+
+/* Garante que nada esconda os formulários por engano */
+#formLogin,
+#formCadastro {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    width: 100% !important;
     height: auto !important;
     overflow: visible !important;
-    animation: fadeForm 0.28s ease-out;
-}
-@keyframes fadeForm {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+    margin: 0;
+    padding: 0;
 }
 
 .campo {

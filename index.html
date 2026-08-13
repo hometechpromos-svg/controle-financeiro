@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- ====== TELA DE LOGIN / CADASTRO (ULTRA SIMPLES P/ CELULAR) ====== -->
+    <!-- ====== TELA DE LOGIN / CADASTRO (ULTRA SIMPLES — SEM ABAS!) ====== -->
     <div id="telaAuth" class="tela-auth">
         <div class="tela-auth-inner">
             <div class="auth-box">
@@ -33,59 +33,63 @@
                 <h1 class="auth-titulo">Controle Financeiro</h1>
                 <p class="auth-subtitulo">Sincronize seus gastos em todos os dispositivos</p>
 
-                <div class="auth-tabs" role="tablist">
-                    <button class="auth-tab ativa" id="tabLogin" role="tab" onclick="trocarAuthTab('login')">Entrar</button>
-                    <button class="auth-tab" id="tabCadastro" role="tab" onclick="trocarAuthTab('cadastro')">Criar Conta</button>
+                <!-- ============================================= -->
+                <!-- 👉 ENTRAR (LOGIN) -->
+                <!-- ============================================= -->
+                <div class="auth-form-wrapper" style="margin-bottom: 28px; padding-bottom: 22px; border-bottom: 1px solid rgba(148,163,184,0.18);">
+                    <h2 class="auth-sub-titulo" style="margin: 0 0 14px 0; font-size: 16px; color: #10b981; font-weight: 700;">🔐 Entrar na minha conta</h2>
+                    <form id="formLogin">
+                        <div class="campo">
+                            <label>Email</label>
+                            <input type="email" id="loginEmail" placeholder="voce@email.com" autocomplete="email" required>
+                        </div>
+                        <div class="campo">
+                            <label>Senha</label>
+                            <input type="password" id="loginSenha" placeholder="Mínimo 6 caracteres" autocomplete="current-password" required>
+                        </div>
+                        <button type="submit" class="btn-auth">Entrar</button>
+                        <p class="auth-msg" id="loginMsg"></p>
+
+                        <!-- BOTÃO ADMIN: entra direto na conta admin / cria se não existir -->
+                        <div class="admin-box" style="margin-top:20px;padding:14px;border:1px dashed rgba(16,185,129,0.45);border-radius:12px;background:rgba(16,185,129,0.06);">
+                            <p style="margin:0 0 10px 0;font-size:12px;color:#94a3b8;font-weight:600;">⚙️ ADMIN (Acesso Rápido)</p>
+                            <button type="button" class="btn-admin-criar" id="btnEntrarAdmin" style="width:100%;padding:12px;background:#052e1c;color:#34d399;border:1px solid rgba(16,185,129,0.5);border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;pointer-events:auto;touch-action:manipulation;">
+                                🚀 Entrar / Criar Conta Admin
+                            </button>
+                            <p class="admin-info" style="margin:9px 0 0 0;font-size:11px;color:#64748b;line-height:1.5;">
+                                Dados: <b>admin@financas.app</b> / <b>admin123</b><br>
+                                <span style="color:#94a3b8;">Cria a conta automaticamente se não existir.</span>
+                            </p>
+                        </div>
+                    </form>
                 </div>
 
-                <!-- Formulário de LOGIN (INICIALMENTE VISÍVEL) -->
-                <form id="formLogin" class="auth-form ativa">
-                    <div class="campo">
-                        <label>Email</label>
-                        <input type="email" id="loginEmail" placeholder="voce@email.com" autocomplete="email" required>
-                    </div>
-                    <div class="campo">
-                        <label>Senha</label>
-                        <input type="password" id="loginSenha" placeholder="Mínimo 6 caracteres" autocomplete="current-password" required>
-                    </div>
-                    <button type="submit" class="btn-auth">Entrar</button>
-                    <p class="auth-msg" id="loginMsg"></p>
-
-                    <!-- BOTÃO ADMIN: cria uma conta PRÉ-DEFINIDA (para você entrar rápido) -->
-                    <div class="admin-box" style="margin-top:22px;padding:14px;border:1px dashed rgba(16,185,129,0.45);border-radius:12px;background:rgba(16,185,129,0.06);">
-                        <p style="margin:0 0 10px 0;font-size:12px;color:#94a3b8;font-weight:600;">⚙️ ADMIN</p>
-                        <button type="button" class="btn-admin-criar" id="btnCriarAdmin" style="width:100%;padding:10px;background:#0b1a12;color:#34d399;border:1px solid rgba(16,185,129,0.5);border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;pointer-events:auto;touch-action:manipulation;">
-                            🚀 Criar minha conta Admin agora
-                        </button>
-                        <p class="admin-info" style="margin:9px 0 0 0;font-size:11px;color:#64748b;line-height:1.5;">
-                            Email: <b>admin@financas.app</b><br>
-                            Senha: <b>admin123</b><br>
-                            <span style="color:#94a3b8;">Clique 1 vez para criar e depois use esses dados para entrar.</span>
-                        </p>
-                    </div>
-                </form>
-
-                <!-- Formulário de CADASTRO (INICIALMENTE ESCONDIDO COM TUDO!) -->
-                <form id="formCadastro" class="auth-form" hidden style="display:none !important;visibility:hidden !important;opacity:0 !important;height:0;overflow:hidden;">
-                    <div class="campo">
-                        <label>Nome completo</label>
-                        <input type="text" id="cadastroNome" placeholder="Seu nome" autocomplete="name" required>
-                    </div>
-                    <div class="campo">
-                        <label>Telefone / WhatsApp</label>
-                        <input type="tel" id="cadastroTelefone" placeholder="(00) 00000-0000" autocomplete="tel" required>
-                    </div>
-                    <div class="campo">
-                        <label>Email</label>
-                        <input type="email" id="cadastroEmail" placeholder="voce@email.com" autocomplete="email" required>
-                    </div>
-                    <div class="campo">
-                        <label>Senha</label>
-                        <input type="password" id="cadastroSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6" required>
-                    </div>
-                    <button type="submit" class="btn-auth">Criar Conta</button>
-                    <p class="auth-msg" id="cadastroMsg"></p>
-                </form>
+                <!-- ============================================= -->
+                <!-- 👉 CRIAR CONTA (NOVO USUÁRIO) -->
+                <!-- ============================================= -->
+                <div class="auth-form-wrapper">
+                    <h2 class="auth-sub-titulo" style="margin: 0 0 14px 0; font-size: 16px; color: #34d399; font-weight: 700;">✨ Criar uma conta nova</h2>
+                    <form id="formCadastro">
+                        <div class="campo">
+                            <label>Nome completo</label>
+                            <input type="text" id="cadastroNome" placeholder="Seu nome" autocomplete="name" required>
+                        </div>
+                        <div class="campo">
+                            <label>Telefone / WhatsApp</label>
+                            <input type="tel" id="cadastroTelefone" placeholder="(00) 00000-0000" autocomplete="tel" required>
+                        </div>
+                        <div class="campo">
+                            <label>Email</label>
+                            <input type="email" id="cadastroEmail" placeholder="voce@email.com" autocomplete="email" required>
+                        </div>
+                        <div class="campo">
+                            <label>Senha</label>
+                            <input type="password" id="cadastroSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6" required>
+                        </div>
+                        <button type="submit" class="btn-auth" style="background: #16a34a;">Criar Conta Nova</button>
+                        <p class="auth-msg" id="cadastroMsg"></p>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
